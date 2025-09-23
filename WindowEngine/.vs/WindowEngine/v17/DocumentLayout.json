@@ -1,13 +1,13 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\GAM531\\GameEngineFoundations-dev\\GameEngineFoundations-dev\\WindowEngine\\",
+  "WorkspaceRootPath": "C:\\GAM531\\assignment1\\WindowEngine\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|c:\\gam531\\gameenginefoundations-dev\\gameenginefoundations-dev\\windowengine\\windowengine\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|c:\\gam531\\assignment1\\windowengine\\windowengine\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|solutionrelative:windowengine\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|c:\\gam531\\gameenginefoundations-dev\\gameenginefoundations-dev\\windowengine\\windowengine\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|c:\\gam531\\assignment1\\windowengine\\windowengine\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|solutionrelative:windowengine\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -24,11 +24,11 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "Game.cs",
-              "DocumentMoniker": "C:\\GAM531\\GameEngineFoundations-dev\\GameEngineFoundations-dev\\WindowEngine\\WindowEngine\\Game.cs",
+              "DocumentMoniker": "C:\\GAM531\\assignment1\\WindowEngine\\WindowEngine\\Game.cs",
               "RelativeDocumentMoniker": "WindowEngine\\Game.cs",
-              "ToolTip": "C:\\GAM531\\GameEngineFoundations-dev\\GameEngineFoundations-dev\\WindowEngine\\WindowEngine\\Game.cs",
+              "ToolTip": "C:\\GAM531\\assignment1\\WindowEngine\\WindowEngine\\Game.cs",
               "RelativeToolTip": "WindowEngine\\Game.cs",
-              "ViewState": "AgIAAGsAAAAAAAAAAAAkwHkAAAAyAAAAAAAAAA==",
+              "ViewState": "AgIAAEEAAAAAAAAAAAAkwGgAAABGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-08T20:01:43.528Z",
               "EditorCaption": ""
@@ -37,9 +37,9 @@
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "Program.cs",
-              "DocumentMoniker": "C:\\GAM531\\GameEngineFoundations-dev\\GameEngineFoundations-dev\\WindowEngine\\WindowEngine\\Program.cs",
+              "DocumentMoniker": "C:\\GAM531\\assignment1\\WindowEngine\\WindowEngine\\Program.cs",
               "RelativeDocumentMoniker": "WindowEngine\\Program.cs",
-              "ToolTip": "C:\\GAM531\\GameEngineFoundations-dev\\GameEngineFoundations-dev\\WindowEngine\\WindowEngine\\Program.cs",
+              "ToolTip": "C:\\GAM531\\assignment1\\WindowEngine\\WindowEngine\\Program.cs",
               "RelativeToolTip": "WindowEngine\\Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",

@@ -429,11 +429,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\GAM531\\assigment2\\WindowEngine\\WindowEngine\\WindowEngine.csproj",
+      "projectUniqueName": "C:\\GAM531\\assignment1\\Assignment2\\WindowEngine\\WindowEngine.csproj",
       "projectName": "WindowEngine",
-      "projectPath": "C:\\GAM531\\assigment2\\WindowEngine\\WindowEngine\\WindowEngine.csproj",
+      "projectPath": "C:\\GAM531\\assignment1\\Assignment2\\WindowEngine\\WindowEngine.csproj",
       "packagesPath": "C:\\Users\\ngodo\\.nuget\\packages\\",
-      "outputPath": "C:\\GAM531\\assigment2\\WindowEngine\\WindowEngine\\obj\\",
+      "outputPath": "C:\\GAM531\\assignment1\\Assignment2\\WindowEngine\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

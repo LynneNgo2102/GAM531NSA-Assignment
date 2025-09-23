@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "dDTBVFNWmQw=",
+  "dgSpecHash": "5nolF2ZVTDU=",
   "success": true,
-  "projectFilePath": "C:\\GAM531\\assigment2\\WindowEngine\\WindowEngine\\WindowEngine.csproj",
+  "projectFilePath": "C:\\GAM531\\assignment1\\Assignment2\\WindowEngine\\WindowEngine.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ngodo\\.nuget\\packages\\opentk\\4.9.4\\opentk.4.9.4.nupkg.sha512",
     "C:\\Users\\ngodo\\.nuget\\packages\\opentk.audio.openal\\4.9.4\\opentk.audio.openal.4.9.4.nupkg.sha512",
