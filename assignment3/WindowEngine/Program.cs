@@ -9,19 +9,19 @@ namespace WindowEngine
         // Main method: the starting point of every C# console application
         static void Main(string[] args)
         {
-            // 'using' ensures proper disposal of resources when the Game object is no longer needed
-            //using (Game game = new Game())
-            //{
-            // Start the game loop
-            // The Run() method usually contains the main update-render loop
-            //  game.Run();
-            //} // At this point, the 'game' object is automatically disposed, freeing any resources it used
+              //'using' ensures proper disposal of resources when the Game object is no longer needed
+            using (Game game = new Game())     
+            {
+               // Start the game loop
+             //The Run() method usually contains the main update-render loop
+              game.Run();
+            } // At this point, the 'game' object is automatically disposed, freeing any resources it used
 
-            Vector3D v = new Vector3D();
-            v.Calculate();
+            //Vector3D v = new Vector3D();
+            //v.Calculate();
 
-            Matrix4D m = new Matrix4D();
-            m.CalculateMatrix();
+            //Matrix4D m = new Matrix4D();
+            //m.CalculateMatrix();
         }
     }
 }
