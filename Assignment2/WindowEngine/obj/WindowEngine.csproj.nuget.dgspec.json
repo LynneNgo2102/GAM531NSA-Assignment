@@ -53,6 +53,10 @@
             "OpenTK": {
               "target": "Package",
               "version": "[4.9.4, )"
+            },
+            "System.Drawing.Common": {
+              "target": "Package",
+              "version": "[9.0.9, )"
             }
           },
           "imports": [
