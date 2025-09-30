@@ -7,16 +7,8 @@
       "RelativeMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|solutionrelative:windowengine\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|c:\\gam531\\assignment1\\assignment4\\windowengine\\matrix4d.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|solutionrelative:windowengine\\matrix4d.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|c:\\gam531\\assignment1\\assignment4\\windowengine\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|solutionrelative:windowengine\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|c:\\gam531\\assignment1\\assignment4\\windowengine\\vector3d.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|solutionrelative:windowengine\\vector3d.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,11 +18,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment4\\WindowEngine\\Program.cs",
               "RelativeDocumentMoniker": "WindowEngine\\Program.cs",
@@ -38,31 +30,8 @@
               "RelativeToolTip": "WindowEngine\\Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-18T02:13:30.924Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Vector3D.cs",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment4\\WindowEngine\\Vector3D.cs",
-              "RelativeDocumentMoniker": "WindowEngine\\Vector3D.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment4\\WindowEngine\\Vector3D.cs",
-              "RelativeToolTip": "WindowEngine\\Vector3D.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-18T02:07:38.001Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Matrix4D.cs",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment4\\WindowEngine\\Matrix4D.cs",
-              "RelativeDocumentMoniker": "WindowEngine\\Matrix4D.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment4\\WindowEngine\\Matrix4D.cs",
-              "RelativeToolTip": "WindowEngine\\Matrix4D.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-18T02:07:25.149Z"
+              "WhenOpened": "2025-09-18T02:13:30.924Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -70,9 +39,9 @@
               "Title": "Game.cs",
               "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment4\\WindowEngine\\Game.cs",
               "RelativeDocumentMoniker": "WindowEngine\\Game.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment4\\WindowEngine\\Game.cs",
-              "RelativeToolTip": "WindowEngine\\Game.cs",
-              "ViewState": "AgIAAEAAAAAAAAAAAAAswEwAAAA1AAAAAAAAAA==",
+              "ToolTip": "C:\\GAM531\\assignment1\\assignment4\\WindowEngine\\Game.cs*",
+              "RelativeToolTip": "WindowEngine\\Game.cs*",
+              "ViewState": "AgIAAGIAAAAAAAAAAAAcwG0AAAA5AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-18T02:02:42.201Z",
               "EditorCaption": ""

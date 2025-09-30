@@ -91,3 +91,8 @@ C:\GAM531\assignment1\assignment4\WindowEngine\obj\Debug\net8.0\refint\WindowEng
 C:\GAM531\assignment1\assignment4\WindowEngine\obj\Debug\net8.0\WindowEngine.pdb
 C:\GAM531\assignment1\assignment4\WindowEngine\obj\Debug\net8.0\WindowEngine.genruntimeconfig.cache
 C:\GAM531\assignment1\assignment4\WindowEngine\obj\Debug\net8.0\ref\WindowEngine.dll
+C:\GAM531\assignment1\assignment4\WindowEngine\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
+C:\GAM531\assignment1\assignment4\WindowEngine\bin\Debug\net8.0\System.Drawing.Common.dll
+C:\GAM531\assignment1\assignment4\WindowEngine\bin\Debug\net8.0\System.Private.Windows.Core.dll
+C:\GAM531\assignment1\assignment4\WindowEngine\bin\Debug\net8.0\runtimes\win\lib\net8.0\Microsoft.Win32.SystemEvents.dll
+C:\GAM531\assignment1\assignment4\WindowEngine\bin\Debug\net8.0\StbImageSharp.dll

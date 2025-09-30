@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "wBGSOpCbhXE=",
+  "dgSpecHash": "4XD0GoK+hHU=",
   "success": true,
   "projectFilePath": "C:\\GAM531\\assignment1\\assignment4\\WindowEngine\\WindowEngine.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\ngodo\\.nuget\\packages\\microsoft.win32.systemevents\\9.0.9\\microsoft.win32.systemevents.9.0.9.nupkg.sha512",
     "C:\\Users\\ngodo\\.nuget\\packages\\opentk\\4.9.4\\opentk.4.9.4.nupkg.sha512",
     "C:\\Users\\ngodo\\.nuget\\packages\\opentk.audio.openal\\4.9.4\\opentk.audio.openal.4.9.4.nupkg.sha512",
     "C:\\Users\\ngodo\\.nuget\\packages\\opentk.compute\\4.9.4\\opentk.compute.4.9.4.nupkg.sha512",
@@ -15,6 +16,8 @@
     "C:\\Users\\ngodo\\.nuget\\packages\\opentk.windowing.common\\4.9.4\\opentk.windowing.common.4.9.4.nupkg.sha512",
     "C:\\Users\\ngodo\\.nuget\\packages\\opentk.windowing.desktop\\4.9.4\\opentk.windowing.desktop.4.9.4.nupkg.sha512",
     "C:\\Users\\ngodo\\.nuget\\packages\\opentk.windowing.graphicslibraryframework\\4.9.4\\opentk.windowing.graphicslibraryframework.4.9.4.nupkg.sha512",
+    "C:\\Users\\ngodo\\.nuget\\packages\\stbimagesharp\\2.30.15\\stbimagesharp.2.30.15.nupkg.sha512",
+    "C:\\Users\\ngodo\\.nuget\\packages\\system.drawing.common\\9.0.9\\system.drawing.common.9.0.9.nupkg.sha512",
     "C:\\Users\\ngodo\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
   ],
   "logs": []
