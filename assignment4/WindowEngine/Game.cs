@@ -13,37 +13,54 @@ namespace WindowEngine
         private int textureId;
 
         private float[] cubeVertices =
-        {
-            // positions         // texcoords
-            // Front
-            -0.5f, -0.5f,  0.5f,  0f, 0f,
-             0.5f, -0.5f,  0.5f,  1f, 0f,
-             0.5f,  0.5f,  0.5f,  1f, 1f,
-            -0.5f,  0.5f,  0.5f,  0f, 1f,
+ {
+    // positions        // texcoords
+    // Front face
+    -0.5f, -0.5f,  0.5f,  0f, 0f,
+     0.5f, -0.5f,  0.5f,  1f, 0f,
+     0.5f,  0.5f,  0.5f,  1f, 1f,
+    -0.5f,  0.5f,  0.5f,  0f, 1f,
 
-            // Back
-            -0.5f, -0.5f, -0.5f,  1f, 0f,
-             0.5f, -0.5f, -0.5f,  0f, 0f,
-             0.5f,  0.5f, -0.5f,  0f, 1f,
-            -0.5f,  0.5f, -0.5f,  1f, 1f,
-        };
+    // Back face
+    -0.5f, -0.5f, -0.5f,  1f, 0f,
+     0.5f, -0.5f, -0.5f,  0f, 0f,
+     0.5f,  0.5f, -0.5f,  0f, 1f,
+    -0.5f,  0.5f, -0.5f,  1f, 1f,
+
+    // Left face
+    -0.5f, -0.5f, -0.5f,  0f, 0f,
+    -0.5f, -0.5f,  0.5f,  1f, 0f,
+    -0.5f,  0.5f,  0.5f,  1f, 1f,
+    -0.5f,  0.5f, -0.5f,  0f, 1f,
+
+    // Right face
+     0.5f, -0.5f, -0.5f,  1f, 0f,
+     0.5f, -0.5f,  0.5f,  0f, 0f,
+     0.5f,  0.5f,  0.5f,  0f, 1f,
+     0.5f,  0.5f, -0.5f,  1f, 1f,
+
+    // Top face
+    -0.5f,  0.5f,  0.5f,  0f, 0f,
+     0.5f,  0.5f,  0.5f,  1f, 0f,
+     0.5f,  0.5f, -0.5f,  1f, 1f,
+    -0.5f,  0.5f, -0.5f,  0f, 1f,
+
+    // Bottom face
+    -0.5f, -0.5f,  0.5f,  0f, 1f,
+     0.5f, -0.5f,  0.5f,  1f, 1f,
+     0.5f, -0.5f, -0.5f,  1f, 0f,
+    -0.5f, -0.5f, -0.5f,  0f, 0f
+};
 
         private uint[] indices =
         {
-            // Front
-            0, 1, 2, 2, 3, 0,
-            // Back
-            4, 5, 6, 6, 7, 4,
-            // Left
-            4, 0, 3, 3, 7, 4,
-            // Right
-            1, 5, 6, 6, 2, 1,
-            // Top
-            3, 2, 6, 6, 7, 3,
-            // Bottom
-            4, 5, 1, 1, 0, 4
-        };
-
+    0, 1, 2, 2, 3, 0,       // Front
+    4, 5, 6, 6, 7, 4,       // Back
+    8, 9, 10, 10, 11, 8,    // Left
+    12, 13, 14, 14, 15, 12, // Right
+    16, 17, 18, 18, 19, 16, // Top
+    20, 21, 22, 22, 23, 20  // Bottom
+};
         public Game()
             : base(GameWindowSettings.Default, NativeWindowSettings.Default)
         {
@@ -107,7 +124,7 @@ namespace WindowEngine
 
             shaderProgram = CreateShaderProgram(vertexShaderCode, fragmentShaderCode);
 
-            textureId = LoadTexture("brick-texture.jpg");
+            textureId = LoadTexture("wall.jpg");
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -177,13 +194,25 @@ namespace WindowEngine
             {
                 var image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
 
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba,
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, 
                     image.Width, image.Height, 0,
                     OpenTK.Graphics.OpenGL4.PixelFormat.Rgba, PixelType.UnsignedByte, image.Data);
             }
 
+            //Texture wrapping setup
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.MirroredRepeat);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.MirroredRepeat);
+
+            // Filtering (smooth scaling)
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+
+            float[] borderColor = { 1f, 1f, 0f, 1f };
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, borderColor);
+
             GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
             return tex;
         }
+
     }
 }
