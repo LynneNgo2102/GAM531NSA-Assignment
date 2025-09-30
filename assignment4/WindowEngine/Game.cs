@@ -28,7 +28,7 @@ namespace WindowEngine
             -0.5f,  0.5f, -0.5f,  1f, 1f,
         };
 
-        private uint[] cubeIndices =
+        private uint[] indices =
         {
             // Front
             0, 1, 2, 2, 3, 0,
@@ -68,7 +68,7 @@ namespace WindowEngine
             GL.BufferData(BufferTarget.ArrayBuffer, cubeVertices.Length * sizeof(float), cubeVertices, BufferUsageHint.StaticDraw);
 
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, cubeIndices.Length * sizeof(uint), cubeIndices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
@@ -131,7 +131,7 @@ namespace WindowEngine
             GL.BindTexture(TextureTarget.Texture2D, textureId);
 
             GL.BindVertexArray(vao);
-            GL.DrawElements(PrimitiveType.Triangles, cubeIndices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
 
             SwapBuffers();
         }
