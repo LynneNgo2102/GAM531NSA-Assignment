@@ -30,6 +30,10 @@ namespace WindowEngine
                 game.Init();
                 Console.WriteLine($"OpenGL Version: {GL.GetString(StringName.Version)}");
             };
+            window.UpdateFrame += (FrameEventArgs e) =>
+            {
+                game.HandleInput(window.KeyboardState); // <-- NEW
+            };
 
             // Render loop
             window.RenderFrame += (args) =>

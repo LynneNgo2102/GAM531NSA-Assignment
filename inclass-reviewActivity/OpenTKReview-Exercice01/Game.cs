@@ -1,6 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework; // <-- for KeyboardState
 using System;
 using System.Runtime.InteropServices;
 
@@ -15,26 +16,45 @@ namespace WindowEngine
         private int vao, vbo, shaderProgram;
 
         // World parameters (can zoom/pan)
-        private float worldMinX = -2f, worldMaxX = 2f;
+        private float worldMinX = -10f, worldMaxX = 10f;
         private float worldMinY = -2f, worldMaxY = 2f;
         private float centerX = 0f, centerY = 0f;
+        private float zoom = 1f;
+
+        private KeyboardState keyboard;
 
         public Game(int width, int height)
         {
             screen = new Surface(width, height);
         }
 
+        // --- Input handling ---
+        public void HandleInput(KeyboardState kbd)
+        {
+            keyboard = kbd;
+
+            // Zoom
+            if (kbd.IsKeyDown(Keys.Z)) zoom *= 1.02f;
+            if (kbd.IsKeyDown(Keys.X)) zoom /= 1.02f;
+
+            // Pan
+            if (kbd.IsKeyDown(Keys.Left)) centerX -= 0.1f * zoom;
+            if (kbd.IsKeyDown(Keys.Right)) centerX += 0.1f * zoom;
+            if (kbd.IsKeyDown(Keys.Up)) centerY += 0.1f * zoom;
+            if (kbd.IsKeyDown(Keys.Down)) centerY -= 0.1f * zoom;
+        }
+
         // Generic world→screen transform
         private int TX(float x)
         {
-            float worldWidth = worldMaxX - worldMinX;
+            float worldWidth = (worldMaxX - worldMinX) * zoom;
             float nx = (x - (centerX - worldWidth / 2f)) / worldWidth; // normalize 0–1
             return (int)(nx * screen.width);
         }
 
         private int TY(float y)
         {
-            float worldHeight = worldMaxY - worldMinY;
+            float worldHeight = (worldMaxY - worldMinY) * zoom;
             float ny = (y - (centerY - worldHeight / 2f)) / worldHeight; // normalize 0–1
             return (int)((1f - ny) * screen.height); // invert Y
         }
@@ -107,11 +127,11 @@ namespace WindowEngine
         {
             screen.Clear(0x000000);
 
-            // Example: zoom in and shift center
-            worldMinX = -2f; worldMaxX = 2f;
-            worldMinY = -2f; worldMaxY = 2f;
-            centerX = 0f; centerY = 0f;
+            // Draw axes & function
+            DrawAxes();
+            DrawFunction();
 
+            // Still keep spinning square
             DrawSpinningSquare();
 
             // Upload pixels
@@ -156,6 +176,30 @@ namespace WindowEngine
             {
                 int next = (i + 1) % 4;
                 screen.Line(sx[i], sy[i], sx[next], sy[next], 0xffffff);
+            }
+        }
+
+        private void DrawAxes()
+        {
+            // X-axis
+            screen.Line(TX(worldMinX), TY(0), TX(worldMaxX), TY(0), 0x00ff00);
+            // Y-axis
+            screen.Line(TX(0), TY(worldMinY), TX(0), TY(worldMaxY), 0x00ff00);
+        }
+
+        private void DrawFunction()
+        {
+            float step = 0.05f;
+            float prevX = worldMinX, prevY = (float)Math.Sin(prevX);
+
+            for (float x = worldMinX + step; x <= worldMaxX; x += step)
+            {
+                float y = (float)Math.Sin(x);
+
+                screen.Line(TX(prevX), TY(prevY), TX(x), TY(y), 0xff0000);
+
+                prevX = x;
+                prevY = y;
             }
         }
 
