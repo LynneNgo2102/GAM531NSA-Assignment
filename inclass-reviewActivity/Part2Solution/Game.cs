@@ -1,261 +1,181 @@
 ﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Windowing.Common;
-using OpenTK.Windowing.Desktop;
-using OpenTK.Windowing.GraphicsLibraryFramework; // <-- for KeyboardState
+using OpenTK.Mathematics;
 using System;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace WindowEngine
 {
     public class Game
     {
-        private readonly Surface screen;
-        private float angle = 0f; // rotation angle
+        private int width, height;
+        private int shaderProgram;
+        private int vao;
+        private int vertexCount;
 
-        private int textureId;
-        private int vao, vbo, shaderProgram;
+        private float time; // for wave animation
 
-        // World parameters (can zoom/pan)
-        private float worldMinX = -10f, worldMaxX = 10f;
-        private float worldMinY = -2f, worldMaxY = 2f;
-        private float centerX = 0f, centerY = 0f;
-        private float zoom = 1f;
-
-        private KeyboardState keyboard;
-
-        public Game(int width, int height)
+        public Game(int w, int h)
         {
-            screen = new Surface(width, height);
+            width = w;
+            height = h;
         }
 
-        // --- Input handling ---
-        public void HandleInput(KeyboardState kbd)
+        // === Shader Sources ===
+        private string vertexShaderCode = @"
+            #version 330 core
+            layout(location = 0) in vec3 aPosition;
+            layout(location = 1) in vec3 aColor;
+
+            uniform mat4 uMVP;
+            uniform float uTime;
+
+            out vec3 vColor;
+
+            void main() 
+            {
+                // animate height with sine wave
+                float wave = 0.05 * sin(10.0 * (aPosition.x + aPosition.z) + uTime);
+                vec3 pos = vec3(aPosition.x, aPosition.y + wave, aPosition.z);
+
+                gl_Position = uMVP * vec4(pos, 1.0);
+                vColor = aColor;
+            }
+        ";
+
+        private string fragmentShaderCode = @"
+            #version 330 core
+            in vec3 vColor;
+            out vec4 FragColor;
+
+            void main()
+            {
+                FragColor = vec4(vColor, 1.0);
+            }
+        ";
+
+        // === Shader Utils ===
+        private int CompileShader(string code, ShaderType type)
         {
-            keyboard = kbd;
+            int shader = GL.CreateShader(type);
+            GL.ShaderSource(shader, code);
+            GL.CompileShader(shader);
 
-            // Zoom
-            if (kbd.IsKeyDown(Keys.Z)) zoom *= 1.02f;
-            if (kbd.IsKeyDown(Keys.X)) zoom /= 1.02f;
+            GL.GetShader(shader, ShaderParameter.CompileStatus, out int success);
+            if (success == 0)
+                Console.WriteLine(GL.GetShaderInfoLog(shader));
 
-            // Pan
-            if (kbd.IsKeyDown(Keys.Left)) centerX -= 0.1f * zoom;
-            if (kbd.IsKeyDown(Keys.Right)) centerX += 0.1f * zoom;
-            if (kbd.IsKeyDown(Keys.Up)) centerY += 0.1f * zoom;
-            if (kbd.IsKeyDown(Keys.Down)) centerY -= 0.1f * zoom;
+            return shader;
         }
 
-        // Generic world→screen transform
-        private int TX(float x)
+        private int CreateProgram(string vsCode, string fsCode)
         {
-            float worldWidth = (worldMaxX - worldMinX) * zoom;
-            float nx = (x - (centerX - worldWidth / 2f)) / worldWidth; // normalize 0–1
-            return (int)(nx * screen.width);
-        }
+            int vs = CompileShader(vsCode, ShaderType.VertexShader);
+            int fs = CompileShader(fsCode, ShaderType.FragmentShader);
 
-        private int TY(float y)
-        {
-            float worldHeight = (worldMaxY - worldMinY) * zoom;
-            float ny = (y - (centerY - worldHeight / 2f)) / worldHeight; // normalize 0–1
-            return (int)((1f - ny) * screen.height); // invert Y
+            int program = GL.CreateProgram();
+            GL.AttachShader(program, vs);
+            GL.AttachShader(program, fs);
+            GL.LinkProgram(program);
+
+            GL.GetProgram(program, GetProgramParameterName.LinkStatus, out int success);
+            if (success == 0)
+                Console.WriteLine(GL.GetProgramInfoLog(program));
+
+            GL.DeleteShader(vs);
+            GL.DeleteShader(fs);
+
+            return program;
         }
 
         public void Init()
         {
-            // Generate texture
-            textureId = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, textureId);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba,
-                screen.width, screen.height, 0, PixelFormat.Bgra, PixelType.UnsignedByte, IntPtr.Zero);
+            shaderProgram = CreateProgram(vertexShaderCode, fragmentShaderCode);
 
-            // Fullscreen quad
-            float[] quadVertices = {
-                -1f, -1f, 0f, 0f, 0f,
-                 1f, -1f, 0f, 1f, 0f,
-                 1f,  1f, 0f, 1f, 1f,
-                -1f,  1f, 0f, 0f, 1f
-            };
+            // Generate terrain mesh (512x512 grid)
+            int gridSize = 128; // try 128 for testing (512 is heavier)
+            var verts = new List<float>();
+
+            for (int z = 0; z < gridSize - 1; z++)
+            {
+                for (int x = 0; x < gridSize - 1; x++)
+                {
+                    // two triangles per quad
+                    AddVertex(verts, x, z, gridSize);
+                    AddVertex(verts, x + 1, z, gridSize);
+                    AddVertex(verts, x, z + 1, gridSize);
+
+                    AddVertex(verts, x + 1, z, gridSize);
+                    AddVertex(verts, x + 1, z + 1, gridSize);
+                    AddVertex(verts, x, z + 1, gridSize);
+                }
+            }
+
+            vertexCount = verts.Count / 6;
 
             vao = GL.GenVertexArray();
-            vbo = GL.GenBuffer();
+            int vbo = GL.GenBuffer();
+
             GL.BindVertexArray(vao);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, quadVertices.Length * sizeof(float), quadVertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, verts.Count * sizeof(float), verts.ToArray(), BufferUsageHint.StaticDraw);
 
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+            // position
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
+
+            // color
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(1);
 
-            // Shader
-            string vertexShaderSrc = @"
-                #version 330 core
-                layout(location=0) in vec3 aPos;
-                layout(location=1) in vec2 aTex;
-                out vec2 vTex;
-                void main() { gl_Position = vec4(aPos,1.0); vTex = aTex; }";
+            GL.BindVertexArray(0);
 
-            string fragmentShaderSrc = @"
-                #version 330 core
-                in vec2 vTex;
-                out vec4 FragColor;
-                uniform sampler2D uTex;
-                void main() { FragColor = texture(uTex, vTex); }";
+            GL.ClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+            GL.Enable(EnableCap.DepthTest);
+        }
 
-            int vs = GL.CreateShader(ShaderType.VertexShader);
-            GL.ShaderSource(vs, vertexShaderSrc);
-            GL.CompileShader(vs);
-            CheckShaderError(vs, "Vertex Shader");
+        private void AddVertex(List<float> verts, float x, float z, int gridSize)
+        {
+            float fx = (x / (float)gridSize) * 2f - 1f;
+            float fz = (z / (float)gridSize) * 2f - 1f;
+            float y = 0f;
 
-            int fs = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource(fs, fragmentShaderSrc);
-            GL.CompileShader(fs);
-            CheckShaderError(fs, "Fragment Shader");
+            // position
+            verts.Add(fx);
+            verts.Add(y);
+            verts.Add(fz);
 
-            shaderProgram = GL.CreateProgram();
-            GL.AttachShader(shaderProgram, vs);
-            GL.AttachShader(shaderProgram, fs);
-            GL.LinkProgram(shaderProgram);
-            CheckProgramError(shaderProgram);
-
-            GL.DeleteShader(vs);
-            GL.DeleteShader(fs);
+            // gradient color
+            verts.Add(x / (float)gridSize);
+            verts.Add(0.5f);
+            verts.Add(z / (float)gridSize);
         }
 
         public void Tick()
         {
-            screen.Clear(0x000000);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            time += 0.01f;
 
-            // Draw axes & function
-            DrawAxes();
-            DrawFunction();
-
-            // Still keep spinning square
-            DrawSpinningSquare();
-
-            // Upload pixels
-            GL.BindTexture(TextureTarget.Texture2D, textureId);
-            var handle = GCHandle.Alloc(screen.pixels, GCHandleType.Pinned);
-            try
-            {
-                IntPtr ptr = handle.AddrOfPinnedObject();
-                GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, screen.width, screen.height,
-                    PixelFormat.Bgra, PixelType.UnsignedByte, ptr);
-            }
-            finally { handle.Free(); }
-
-            GL.Clear(ClearBufferMask.ColorBufferBit);
             GL.UseProgram(shaderProgram);
+
+            Matrix4 proj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45f), width / (float)height, 0.1f, 100f);
+            Matrix4 view = Matrix4.LookAt(new Vector3(1.5f, 2.5f, 2.5f), Vector3.Zero, Vector3.UnitY);
+            Matrix4 model = Matrix4.Identity;
+            Matrix4 mvp = model * view * proj;
+
+            int mvpLoc = GL.GetUniformLocation(shaderProgram, "uMVP");
+            GL.UniformMatrix4(mvpLoc, false, ref mvp);
+
+            int timeLoc = GL.GetUniformLocation(shaderProgram, "uTime");
+            GL.Uniform1(timeLoc, time);
+
             GL.BindVertexArray(vao);
-            GL.BindTexture(TextureTarget.Texture2D, textureId);
-            GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
-
-            angle += 0.01f; // speed
-        }
-
-        private void DrawSpinningSquare()
-        {
-            float size = 1.0f;
-            float[] xs = { -size, size, size, -size };
-            float[] ys = { -size, -size, size, size };
-
-            int[] sx = new int[4];
-            int[] sy = new int[4];
-
-            for (int i = 0; i < 4; i++)
-            {
-                float rx = xs[i] * (float)Math.Cos(angle) - ys[i] * (float)Math.Sin(angle);
-                float ry = xs[i] * (float)Math.Sin(angle) + ys[i] * (float)Math.Cos(angle);
-
-                sx[i] = TX(rx);
-                sy[i] = TY(ry);
-            }
-
-            for (int i = 0; i < 4; i++)
-            {
-                int next = (i + 1) % 4;
-                screen.Line(sx[i], sy[i], sx[next], sy[next], 0xffffff);
-            }
-        }
-
-        private void DrawAxes()
-        {
-            // X-axis
-            screen.Line(TX(worldMinX), TY(0), TX(worldMaxX), TY(0), 0x00ff00);
-            // Y-axis
-            screen.Line(TX(0), TY(worldMinY), TX(0), TY(worldMaxY), 0x00ff00);
-        }
-
-        private void DrawFunction()
-        {
-            float step = 0.05f;
-            float prevX = worldMinX, prevY = (float)Math.Sin(prevX);
-
-            for (float x = worldMinX + step; x <= worldMaxX; x += step)
-            {
-                float y = (float)Math.Sin(x);
-
-                screen.Line(TX(prevX), TY(prevY), TX(x), TY(y), 0xff0000);
-
-                prevX = x;
-                prevY = y;
-            }
+            GL.DrawArrays(PrimitiveType.Triangles, 0, vertexCount);
         }
 
         public void Cleanup()
         {
-            GL.DeleteTexture(textureId);
-            GL.DeleteBuffer(vbo);
             GL.DeleteVertexArray(vao);
             GL.DeleteProgram(shaderProgram);
-        }
-
-        private void CheckShaderError(int shader, string name)
-        {
-            GL.GetShader(shader, ShaderParameter.CompileStatus, out int success);
-            if (success == 0) Console.WriteLine($"{name} Compilation Error: {GL.GetShaderInfoLog(shader)}");
-        }
-
-        private void CheckProgramError(int program)
-        {
-            GL.GetProgram(program, GetProgramParameterName.LinkStatus, out int success);
-            if (success == 0) Console.WriteLine($"Program Link Error: {GL.GetProgramInfoLog(program)}");
-        }
-    }
-
-    public class Surface
-    {
-        public int[] pixels;
-        public int width, height;
-
-        public Surface(int w, int h)
-        {
-            width = w;
-            height = h;
-            pixels = new int[w * h];
-        }
-
-        public void Clear(int color)
-        {
-            for (int i = 0; i < pixels.Length; i++)
-                pixels[i] = color;
-        }
-
-        public void Line(int x0, int y0, int x1, int y1, int color)
-        {
-            int dx = Math.Abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-            int dy = -Math.Abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-            int err = dx + dy, e2;
-            while (true)
-            {
-                if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height)
-                    pixels[y0 * width + x0] = color;
-                if (x0 == x1 && y0 == y1) break;
-                e2 = 2 * err;
-                if (e2 >= dy) { err += dy; x0 += sx; }
-                if (e2 <= dx) { err += dx; y0 += sy; }
-            }
         }
     }
 }
