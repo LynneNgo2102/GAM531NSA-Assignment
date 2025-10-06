@@ -1,25 +1,24 @@
 ﻿using System;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Common;
-using OpenTK.Graphics.OpenGL4;
-using System.Drawing;
-using System.Drawing.Imaging;
-
 
 namespace WindowEngine
 {
     public class Game : GameWindow
     {
-        // GPU handles
-        private int vbo, vao, ebo, shaderProgram;
-        private int textureId;
+        private int vertexBufferHandle;
+        private int shaderProgramHandle;
+        private int vertexArrayHandle;
+        private int uModelLocation;
+        private float time;
 
         public Game()
             : base(GameWindowSettings.Default, NativeWindowSettings.Default)
         {
-            Size = new Vector2i(1280, 768);
-            CenterWindow(Size);
+            this.Size = new Vector2i(1280, 768);
+            this.CenterWindow(this.Size);
         }
 
         protected override void OnResize(ResizeEventArgs e)
@@ -31,173 +30,130 @@ namespace WindowEngine
         protected override void OnLoad()
         {
             base.OnLoad();
+            GL.ClearColor(0.5f, 0.7f, 0.8f, 1f);
 
-            GL.ClearColor(new Color4(0.5f, 0.7f, 0.8f, 1f));
-            GL.Enable(EnableCap.DepthTest);
-
-            // Quad vertices: position (3) + texcoords (2)
-            float[] vertices =
+            float[] vertices = new float[]
             {
-                // X     Y     Z     U   V
-                -0.5f, -0.5f, 0f,   0f, 0f,
-                 0.5f, -0.5f, 0f,   1f, 0f,
-                 0.5f,  0.5f, 0f,   1f, 1f,
-                -0.5f,  0.5f, 0f,   0f, 1f
+                // rectangle made from two triangles
+                -0.5f, -0.5f, 0.0f,
+                 0.5f, -0.5f, 0.0f,
+                 0.5f,  0.5f, 0.0f,
+
+                -0.5f, -0.5f, 0.0f,
+                 0.5f,  0.5f, 0.0f,
+                -0.5f,  0.5f, 0.0f,
             };
 
-            uint[] indices = { 0, 1, 2, 2, 3, 0 };
-
-            // VBO
-            vbo = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
+            vertexBufferHandle = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferHandle);
             GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 
-            // EBO
-            ebo = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
-
-            // VAO
-            vao = GL.GenVertexArray();
-            GL.BindVertexArray(vao);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
-
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+            vertexArrayHandle = GL.GenVertexArray();
+            GL.BindVertexArray(vertexArrayHandle);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferHandle);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
-
-            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
-            GL.EnableVertexAttribArray(1);
-
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindVertexArray(0);
 
-            // Shaders (no matrices)
             string vertexShaderCode = @"
                 #version 330 core
-                layout (location = 0) in vec3 aPosition;
-                layout (location = 1) in vec2 aTexCoord;
-
-                out vec2 TexCoord;
+                layout(location = 0) in vec3 aPosition;
+                uniform mat4 uModel;
 
                 void main()
                 {
-                    gl_Position = vec4(aPosition, 1.0);
-                    TexCoord = aTexCoord;
+                    gl_Position = uModel * vec4(aPosition, 1.0);
                 }
             ";
 
             string fragmentShaderCode = @"
                 #version 330 core
-                in vec2 TexCoord;
                 out vec4 FragColor;
-
-                uniform sampler2D uTexture;
 
                 void main()
                 {
-                    FragColor = texture(uTexture, TexCoord);
+                    FragColor = vec4(0.6f, 0.2f, 0.8f, 1.0f);
                 }
             ";
 
-            shaderProgram = CreateShaderProgram(vertexShaderCode, fragmentShaderCode);
+            int vertexShaderHandle = GL.CreateShader(ShaderType.VertexShader);
+            GL.ShaderSource(vertexShaderHandle, vertexShaderCode);
+            GL.CompileShader(vertexShaderHandle);
+            CheckShaderCompile(vertexShaderHandle, "Vertex Shader");
 
-            // Load texture (make sure you have texture.png in project folder)
-            textureId = LoadTexture("texture.png");
+            int fragmentShaderHandle = GL.CreateShader(ShaderType.FragmentShader);
+            GL.ShaderSource(fragmentShaderHandle, fragmentShaderCode);
+            GL.CompileShader(fragmentShaderHandle);
+            CheckShaderCompile(fragmentShaderHandle, "Fragment Shader");
+
+            shaderProgramHandle = GL.CreateProgram();
+            GL.AttachShader(shaderProgramHandle, vertexShaderHandle);
+            GL.AttachShader(shaderProgramHandle, fragmentShaderHandle);
+            GL.LinkProgram(shaderProgramHandle);
+
+            GL.DetachShader(shaderProgramHandle, vertexShaderHandle);
+            GL.DetachShader(shaderProgramHandle, fragmentShaderHandle);
+            GL.DeleteShader(vertexShaderHandle);
+            GL.DeleteShader(fragmentShaderHandle);
+
+            // Get uniform location
+            uModelLocation = GL.GetUniformLocation(shaderProgramHandle, "uModel");
+        }
+
+        protected override void OnUpdateFrame(FrameEventArgs args)
+        {
+            base.OnUpdateFrame(args);
+            time += (float)args.Time;
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
 
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            GL.UseProgram(shaderProgram);
+            GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.UseProgram(shaderProgramHandle);
+            GL.BindVertexArray(vertexArrayHandle);
 
-            // Bind texture
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, textureId);
+            // ----- Matrix operations -----
+            Matrix4 model = Matrix4.Identity;
 
-            // Draw
-            GL.BindVertexArray(vao);
-            GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+            // Scale (make smaller)
+            model *= Matrix4.CreateScale(0.5f, 0.5f, 1.0f);
+
+            // Rotate around Z axis
+            model *= Matrix4.CreateRotationZ(time);
+
+            // Translate (move)
+            model *= Matrix4.CreateTranslation(0.5f, 0.0f, 0.0f);
+
+            // Send matrix to shader
+            GL.UniformMatrix4(uModelLocation, false, ref model);
+
+            // Draw rectangle
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
+
             GL.BindVertexArray(0);
-
             SwapBuffers();
         }
 
         protected override void OnUnload()
         {
-            GL.DeleteBuffer(vbo);
-            GL.DeleteBuffer(ebo);
-            GL.DeleteVertexArray(vao);
-            GL.DeleteProgram(shaderProgram);
-            GL.DeleteTexture(textureId);
+            GL.DeleteBuffer(vertexBufferHandle);
+            GL.DeleteVertexArray(vertexArrayHandle);
+            GL.DeleteProgram(shaderProgramHandle);
             base.OnUnload();
         }
 
-        // Helpers
-        private int CreateShaderProgram(string vertexCode, string fragmentCode)
+        private void CheckShaderCompile(int shaderHandle, string shaderName)
         {
-            int vShader = CompileShader(ShaderType.VertexShader, vertexCode);
-            int fShader = CompileShader(ShaderType.FragmentShader, fragmentCode);
-
-            int program = GL.CreateProgram();
-            GL.AttachShader(program, vShader);
-            GL.AttachShader(program, fShader);
-            GL.LinkProgram(program);
-
-            GL.GetProgram(program, GetProgramParameterName.LinkStatus, out int success);
+            GL.GetShader(shaderHandle, ShaderParameter.CompileStatus, out int success);
             if (success == 0)
-                Console.WriteLine(GL.GetProgramInfoLog(program));
-
-            GL.DetachShader(program, vShader);
-            GL.DetachShader(program, fShader);
-            GL.DeleteShader(vShader);
-            GL.DeleteShader(fShader);
-
-            return program;
-        }
-
-        private int CompileShader(ShaderType type, string code)
-        {
-            int shader = GL.CreateShader(type);
-            GL.ShaderSource(shader, code);
-            GL.CompileShader(shader);
-
-            GL.GetShader(shader, ShaderParameter.CompileStatus, out int success);
-            if (success == 0)
-                Console.WriteLine(GL.GetShaderInfoLog(shader));
-
-            return shader;
-        }
-
-        private int LoadTexture(string path)
-        {
-            int tex = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, tex);
-
-            using (Bitmap bmp = new Bitmap(path))
             {
-                var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
-                                        ImageLockMode.ReadOnly,
-                                        System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba,
-                              bmp.Width, bmp.Height, 0,
-                              OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-
-                bmp.UnlockBits(data);
+                string infoLog = GL.GetShaderInfoLog(shaderHandle);
+                Console.WriteLine($"Error compiling {shaderName}: {infoLog}");
             }
-
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-
-            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-            return tex;
         }
-
-        
     }
 }
