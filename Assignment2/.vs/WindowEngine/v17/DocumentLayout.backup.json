@@ -38,8 +38,7 @@
               "RelativeToolTip": "WindowEngine\\Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-18T02:13:30.924Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-18T02:13:30.924Z"
             },
             {
               "$type": "Document",
@@ -51,8 +50,7 @@
               "RelativeToolTip": "WindowEngine\\Vector3D.cs",
               "ViewState": "AgIAAAYAAAAAAAAAAAAowB8AAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-18T02:07:38.001Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-18T02:07:38.001Z"
             },
             {
               "$type": "Document",
@@ -64,8 +62,7 @@
               "RelativeToolTip": "WindowEngine\\Matrix4D.cs",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAAA8AAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-18T02:07:25.149Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-18T02:07:25.149Z"
             },
             {
               "$type": "Document",
@@ -73,9 +70,9 @@
               "Title": "Game.cs",
               "DocumentMoniker": "C:\\GAM531\\assignment1\\Assignment2\\WindowEngine\\Game.cs",
               "RelativeDocumentMoniker": "WindowEngine\\Game.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\Assignment2\\WindowEngine\\Game.cs",
-              "RelativeToolTip": "WindowEngine\\Game.cs",
-              "ViewState": "AgIAAAEAAAAAAAAAAAAjwBkAAAAJAAAAAAAAAA==",
+              "ToolTip": "C:\\GAM531\\assignment1\\Assignment2\\WindowEngine\\Game.cs*",
+              "RelativeToolTip": "WindowEngine\\Game.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-18T02:02:42.201Z",
               "EditorCaption": ""
