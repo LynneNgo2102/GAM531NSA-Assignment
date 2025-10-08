@@ -7,6 +7,10 @@
       "RelativeMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|solutionrelative:windowengine\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|c:\\gam531\\assignment1\\assignment5\\windowengine\\readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
+      "RelativeMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|solutionrelative:windowengine\\readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|c:\\gam531\\assignment1\\assignment5\\windowengine\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{CFC6FD41-51C1-46A9-A3F2-DB5E378A2973}|WindowEngine\\WindowEngine.csproj|solutionrelative:windowengine\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
@@ -18,11 +22,24 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "README.md",
+              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment5\\WindowEngine\\README.md",
+              "RelativeDocumentMoniker": "WindowEngine\\README.md",
+              "ToolTip": "C:\\GAM531\\assignment1\\assignment5\\WindowEngine\\README.md",
+              "RelativeToolTip": "WindowEngine\\README.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAACtAQAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-10-07T02:48:12.729Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment5\\WindowEngine\\Program.cs",
               "RelativeDocumentMoniker": "WindowEngine\\Program.cs",
@@ -38,9 +55,9 @@
               "Title": "Game.cs",
               "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment5\\WindowEngine\\Game.cs",
               "RelativeDocumentMoniker": "WindowEngine\\Game.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment5\\WindowEngine\\Game.cs*",
-              "RelativeToolTip": "WindowEngine\\Game.cs*",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
+              "ToolTip": "C:\\GAM531\\assignment1\\assignment5\\WindowEngine\\Game.cs",
+              "RelativeToolTip": "WindowEngine\\Game.cs",
+              "ViewState": "AgIAAPEAAAAAAAAAAAAkwBMBAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-18T02:02:42.201Z",
               "EditorCaption": ""
