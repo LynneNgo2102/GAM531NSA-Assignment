@@ -4,7 +4,7 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
 
-namespace EndlessHallway
+namespace BackRoomMap
 {
     public class Shader : IDisposable
     {

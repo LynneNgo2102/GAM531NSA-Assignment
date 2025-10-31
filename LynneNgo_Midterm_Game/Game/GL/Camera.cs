@@ -2,7 +2,7 @@
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 
-namespace EndlessHallway
+namespace BackRoomMap
 {
     public class Camera
     {

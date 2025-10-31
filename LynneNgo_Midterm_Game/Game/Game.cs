@@ -5,7 +5,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 
-namespace EndlessHallway
+namespace BackRoomMap
 {
     public class Game : GameWindow
     {

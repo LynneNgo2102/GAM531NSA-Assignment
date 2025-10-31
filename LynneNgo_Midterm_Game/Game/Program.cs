@@ -2,7 +2,7 @@
 using OpenTK.Windowing.Desktop;
 
 
-namespace EndlessHallway
+namespace BackRoomMap
 {
     public static class Program
     {
@@ -11,7 +11,7 @@ namespace EndlessHallway
             var native = new NativeWindowSettings()
             {
                 Size = new OpenTK.Mathematics.Vector2i(1280, 720),
-                Title = "Endless Hallway - Midterm",
+                Title = "BackRoom - Midterm",
             };
 
 

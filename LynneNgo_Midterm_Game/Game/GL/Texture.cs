@@ -4,7 +4,7 @@ using System.Drawing.Imaging;
 using OpenTK.Graphics.OpenGL4;
 
 
-namespace EndlessHallway
+namespace BackRoomMap
 {
     public class Texture : IDisposable
     {
