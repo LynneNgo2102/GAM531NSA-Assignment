@@ -1,9 +1,8 @@
 ﻿// File: Program.cs
 //
-// Fix explained: some OpenTK versions expose
-// Matrix4.CreateOrthographicOffCenter(float left, float right, float bottom, float top, float zNear, float zFar)
-// but older/newer API names may differ (e.g., near, far). Using *named* args can break across versions.
-// We switch to *positional* args to be version-agnostic: CreateOrthographicOffCenter(0, 800, 0, 600, -1, 1).
+// Updated to add: Jump + Run, state machine, physics-like vertical motion,
+// animation rows selection based on actual sprite PNG dimensions,
+// model transform updated per-frame, and clean separation of concerns.
 
 using OpenTK.Graphics.OpenGL4;                       // OpenGL API
 using OpenTK.Windowing.Common;                       // Frame events (OnLoad/OnUpdate/OnRender)
@@ -42,7 +41,7 @@ namespace OpenTK_Sprite_Animation
             _texture = LoadTexture("Sprite_Character.png"); // Upload sprite sheet
 
             // Quad vertices: [pos.x, pos.y, uv.x, uv.y], centered model space
-            float w = 32f, h = 64f;                   // Half-size: results in 64x128 sprite
+            float w = 64f, h = 128f;                  // half-size used for quad geometry
             float[] vertices =
             {
                 -w, -h, 0f, 0f,
@@ -78,26 +77,24 @@ namespace OpenTK_Sprite_Animation
             Matrix4 ortho = Matrix4.CreateOrthographicOffCenter(0, 800, 0, 600, -1, 1);
             GL.UniformMatrix4(projLoc, false, ref ortho);
 
-            // Model transform: place the quad at window center (400,300)
-            int modelLoc = GL.GetUniformLocation(_shaderProgram, "model");
-            Matrix4 model = Matrix4.CreateTranslation(400, 300, 0);
-            GL.UniformMatrix4(modelLoc, false, ref model);
-
-            _character = new Character(_shaderProgram); // Initializes idle frame uniforms
+            // Character will manage the model transform itself; start at (400,300)
+            _character = new Character(_shaderProgram, 400f, 300f, _texture, GetLoadedTextureSize("Sprite_Character.png"));
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             base.OnUpdateFrame(e);
 
-            // Read keyboard state -> map to Direction
-            var keyboard = KeyboardState;
-            Direction dir = Direction.None;
-            if (keyboard.IsKeyDown(Keys.Right)) dir = Direction.Right;
-            else if (keyboard.IsKeyDown(Keys.Left)) dir = Direction.Left;
+            // Read keyboard state -> forward to character
+            var kb = KeyboardState;
 
-            // Animation update; when dir == None we *keep last frame visible*
-            _character.Update((float)e.Time, dir);
+            // We'll pass booleans: left/right/run/jump (space/up)
+            bool left = kb.IsKeyDown(Keys.Left);
+            bool right = kb.IsKeyDown(Keys.Right);
+            bool run = kb.IsKeyDown(Keys.LeftShift) || kb.IsKeyDown(Keys.RightShift);
+            bool jumpPressed = kb.IsKeyDown(Keys.Space) || kb.IsKeyDown(Keys.Up);
+
+            _character.Update((float)e.Time, left, right, run, jumpPressed);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -225,89 +222,277 @@ void main() {
 
             return tex;
         }
+
+        // Helper: read image dimensions (width,height) for Character to compute UVs correctly
+        private (int width, int height) GetLoadedTextureSize(string path)
+        {
+            using var img = ImageSharp.Load(path);
+            return (img.Width, img.Height);
+        }
     }
 
-    // --- Direction input abstraction -----------------------------------------------------------
-    public enum Direction { None, Right, Left }
+    // --- Character state machine + animator -----------------------------------------------
+    public enum CharacterState { Idle, Walk, Run, Jump }
+    public enum Facing { Right, Left }
 
-    // --- Animator ------------------------------------------------------------------------------
     public class Character
     {
-        private readonly int _shader;  // Program containing uOffset/uSize
-        private float _timer;          // Accumulated time for frame stepping
-        private int _frame;            // Current frame column (0..FrameCount-1)
-        private Direction _currentDir; // Last non-none direction
+        private readonly int _shader;      // Program containing uOffset/uSize
+        private readonly int _texture;     // texture id (for reference)
+        private readonly float _sheetW;    // sheet pixel width
+        private readonly float _sheetH;    // sheet pixel height
 
-        // Timing
-        private const float FrameTime = 0.15f; // seconds per frame
-        private const int FrameCount = 4;      // frames per row
+        // Position & physics
+        public Vector2 Position;
+        private float _vy;                 // vertical velocity (pixels/sec)
+        private const float Gravity = -1200f;   // pixels per second^2 (downwards)
+        private const float JumpVel = 520f;     // initial jump velocity (pixels/sec)
 
-        // Sprite sheet layout (pixel units) — edit to match your atlas
-        private const float FrameW = 64f;
-        private const float FrameH = 128f;
-        private const float Gap = 60f;      // horizontal spacing between frames
-        private const float TotalW = FrameW + Gap;
-        private const float SheetW = 4 * TotalW - Gap; // 4 columns
-        private const float SheetH = 256f;     // 2 rows of 128 => 256
+        // Movement speeds (pixels/sec)
+        private const float WalkSpeed = 120f;
+        private const float RunSpeed = 260f;
 
-        public Character(int shader)
+        // Animation timing
+        private float _timer;              // accumulated time for stepping
+        private int _frame;                // current frame index
+        private float _frameTimeWalk = 0.15f;
+        private float _frameTimeRun = 0.08f;
+
+        // Facing & state
+        private Facing _facing = Facing.Right;
+        private CharacterState _state = CharacterState.Idle;
+        private bool _grounded = true;     // simple grounded flag: true when on or above baseY
+
+        // Sprite layout guesses (will be adjusted to the loaded image)
+        private readonly int _cols = 4;    // frames per row (commonly 4)
+        private readonly float FrameW;     // pixel width of a frame
+        private readonly float FrameH;     // pixel height of a frame
+        private readonly float Gap;        // horizontal spacing between frames (pixels)
+        private readonly int _rowsAvailable; // computed from sheetH/FrameH
+
+        // Where to place the quad in world-space (we will translate model)
+        private readonly int _modelLoc;
+        private readonly int _offsetLoc;
+        private readonly int _sizeLoc;
+
+        // Ground Y (simple floor). This keeps the character anchored visually.
+        private readonly float _groundY = 300f; // this is the baseline center Y used in your original code
+
+        public Character(int shaderProgram, float startX, float startY, int textureId, (int width, int height) sheetPixels)
         {
-            _shader = shader;
-            _currentDir = Direction.None;
-            SetIdle();                          // Pick a visible starting frame
+            _shader = shaderProgram;
+            _texture = textureId;
+            Position = new Vector2(startX, startY);
+            _vy = 0f;
+
+            _sheetW = sheetPixels.width;
+            _sheetH = sheetPixels.height;
+
+            // Heuristic: try to infer frame sizes from known / provided PNG layout.
+            // The PNG provided to me had approx 4 columns and 2 rows with
+            // frame widths ~77px and frame height ~127px; compute robust defaults:
+            FrameH = _sheetH / 2f; // assume two rows (top/bottom)
+            FrameW = _sheetW / 4f; // assume 4 columns
+
+            // Compute gap by evenly distributing remaining space between frames:
+            // total width = 4 * FrameW + 3 * Gap  => Gap = (sheetW - 4*FrameW) / 3
+            Gap = (_sheetW - _cols * FrameW) / Math.Max(1, (_cols - 1));
+
+            // number of rows available in sheet (floor)
+            _rowsAvailable = Math.Max(1, (int)Math.Floor(_sheetH / FrameH));
+
+            // Uniform locations
+            _modelLoc = GL.GetUniformLocation(_shader, "model");
+            _offsetLoc = GL.GetUniformLocation(_shader, "uOffset");
+            _sizeLoc = GL.GetUniformLocation(_shader, "uSize");
+
+            // start in idle frame
+            _state = CharacterState.Idle;
+            _frame = 0;
+            UpdateSpriteUniformsForFrame(_frame, 0); // default top row 0
+            // Ensure character starts resting on ground baseline
+            Position.Y = startY;
+            _grounded = true;
         }
 
-        public void Update(float delta, Direction dir)
+        /// <summary>
+        /// Main update called each frame. left/right/run/jump come from keyboard state.
+        /// </summary>
+        public void Update(float delta, bool left, bool right, bool run, bool jumpPressed)
         {
-            // Requirement: when input stops, keep showing the last used frame.
-            if (dir == Direction.None)
+            // --- Determine horizontal direction & facing
+            float dir = 0f;
+            if (left) dir = -1f;
+            else if (right) dir = 1f;
+
+            if (dir > 0) _facing = Facing.Right;
+            else if (dir < 0) _facing = Facing.Left;
+
+            // --- Movement & state transitions
+            // Jump input: only trigger when grounded
+            bool tryJump = jumpPressed && _grounded;
+            if (tryJump)
             {
-                _currentDir = Direction.None;   // Remember idle, but DON'T touch uniforms
-                return;
+                _vy = JumpVel;
+                _grounded = false;
+                _state = CharacterState.Jump;
+                // Set jump sprite row if available (row index e.g. 2)
+                ChooseJumpFrame();
+            }
+            else if (!_grounded)
+            {
+                _state = CharacterState.Jump; // maintain mid-air
+            }
+            else if (Math.Abs(dir) > 0.001f)
+            {
+                _state = run ? CharacterState.Run : CharacterState.Walk;
+            }
+            else
+            {
+                _state = CharacterState.Idle;
             }
 
-            // If started moving or changed side: restart cycle
-            if (_currentDir != dir)
+            // --- Horizontal movement
+            float speed = _state == CharacterState.Run ? RunSpeed : WalkSpeed;
+            Position.X += dir * speed * delta;
+
+            // --- Vertical physics (simple)
+            if (!_grounded)
             {
-                _timer = 0f;
-                _frame = 0;
-                _currentDir = dir;
+                // integrate vy with gravity (downwards)
+                _vy += Gravity * delta;
+                Position.Y += _vy * delta;
+
+                // If we reached or passed baseline ground, land
+                if (Position.Y <= _groundY)
+                {
+                    Position.Y = _groundY;
+                    _vy = 0f;
+                    _grounded = true;
+                    // after landing, change to Idle/Walk depending on dir
+                    if (Math.Abs(dir) > 0.001f)
+                        _state = run ? CharacterState.Run : CharacterState.Walk;
+                    else
+                        _state = CharacterState.Idle;
+                }
             }
 
-            _timer += delta;
-            if (_timer >= FrameTime)
+            // --- Animation timing and frame selection
+            switch (_state)
             {
-                _timer -= FrameTime;
-                _frame = (_frame + 1) % FrameCount;
-            }
+                case CharacterState.Idle:
+                    // keep last frame visible or set specific idle frame
+                    // We'll set frame 0 of facing row
+                    _frame = 0;
+                    UpdateSpriteUniformsForFrame(_frame, GetRowForState(_state, _facing));
+                    break;
 
-            int row = dir == Direction.Right ? 0 : 1; // Row per direction
-            SetFrame(_frame, row);                    // Update UV uniforms
+                case CharacterState.Walk:
+                    _timer += delta;
+                    if (_timer >= _frameTimeWalk)
+                    {
+                        _timer -= _frameTimeWalk;
+                        _frame = (_frame + 1) % _cols;
+                    }
+                    UpdateSpriteUniformsForFrame(_frame, GetRowForState(_state, _facing));
+                    break;
+
+                case CharacterState.Run:
+                    _timer += delta;
+                    if (_timer >= _frameTimeRun)
+                    {
+                        _timer -= _frameTimeRun;
+                        _frame = (_frame + 1) % _cols;
+                    }
+                    UpdateSpriteUniformsForFrame(_frame, GetRowForState(_state, _facing));
+                    break;
+
+                case CharacterState.Jump:
+                    // Jump typically uses a single frame (e.g., last frame of row).
+                    // We pick a reasonable single-frame index (middle or last) so it looks like a jump pose.
+                    int jumpFrameIdx = Math.Min(_cols - 1, 1); // prefer frame 1 or last if not enough frames
+                    UpdateSpriteUniformsForFrame(jumpFrameIdx, GetRowForState(_state, _facing));
+                    break;
+            }
         }
 
+        /// <summary>
+        /// Render: set model transform (translate to Position) then draw.
+        /// </summary>
         public void Render()
         {
-            GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4); // Draw quad
-        }
-
-        private void SetIdle()
-        {
-            SetFrame(0, 0); // Any default you prefer
-        }
-
-        // Converts (col,row) in pixels to normalized UVs and uploads to shader
-        private void SetFrame(int col, int row)
-        {
-            float x = (col * TotalW) / SheetW; // normalized start U
-            float y = (row * FrameH) / SheetH; // normalized start V
-            float w = FrameW / SheetW;         // normalized width
-            float h = FrameH / SheetH;         // normalized height
+            // Build model matrix (translate to Position; Z=0)
+            Matrix4 model = Matrix4.CreateTranslation(Position.X, Position.Y, 0f);
 
             GL.UseProgram(_shader);
-            int off = GL.GetUniformLocation(_shader, "uOffset");
-            int sz = GL.GetUniformLocation(_shader, "uSize");
-            GL.Uniform2(off, x, y);
-            GL.Uniform2(sz, w, h);
+            GL.UniformMatrix4(_modelLoc, false, ref model);
+
+            // Draw quad (VAO must be bound externally)
+            GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
+        }
+
+        private void ChooseJumpFrame()
+        {
+            // If the sheet contains a dedicated jump row, prefer to use it; otherwise, we fallback.
+            // We'll attempt to pick row index 2 (i.e., third row) for jump animations.
+            // GetRowForState will clamp to available rows.
+            UpdateSpriteUniformsForFrame(0, GetRowForState(CharacterState.Jump, _facing));
+        }
+
+        /// <summary>
+        /// Map (col,row) to normalized UVs and upload to shader.
+        /// This function handles fallbacks when requested row is not present.
+        /// </summary>
+        private void UpdateSpriteUniformsForFrame(int col, int row)
+        {
+            // Clamp column
+            col = Math.Clamp(col, 0, _cols - 1);
+
+            // Determine available rows from sheet size; if requested row >= available, fallback to 0 or facing rows
+            int rowCountAvailable = _rowsAvailable;
+            if (row >= rowCountAvailable) row = 0;
+
+            // Compute start X in pixels: start of column = col*(FrameW + Gap)
+            float startX = col * (FrameW + Gap);
+            float startY = row * FrameH;
+
+            // Convert to normalized UV (0..1)
+            float u = startX / _sheetW;
+            float v = startY / _sheetH;
+            float w = FrameW / _sheetW;
+            float h = FrameH / _sheetH;
+
+            GL.UseProgram(_shader);
+            GL.Uniform2(_offsetLoc, u, v);
+            GL.Uniform2(_sizeLoc, w, h);
+        }
+
+        /// <summary>
+        /// Determines which row index to use for a given state and facing direction.
+        /// You can customize row mapping according to your atlas layout.
+        /// By default: row 0 = facing right, row 1 = facing left.
+        /// If you have extra rows: row 2/3 could be jump rows (right/left).
+        /// </summary>
+        private int GetRowForState(CharacterState state, Facing facing)
+        {
+            // Default layout assumptions:
+            // row 0: right-facing walk/idle
+            // row 1: left-facing walk/idle
+            // row 2: right-facing jump (optional)
+            // row 3: left-facing jump (optional)
+            int baseRowForFacing = facing == Facing.Right ? 0 : 1;
+
+            return state switch
+            {
+                CharacterState.Idle => baseRowForFacing,
+                CharacterState.Walk => baseRowForFacing,
+                CharacterState.Run => baseRowForFacing, // assume same row as walk but faster timing
+                CharacterState.Jump =>
+                    // if jump rows exist, prefer rows 2/3; otherwise fallback to facing row
+                    (_rowsAvailable >= 4) ? (facing == Facing.Right ? 2 : 3) :
+                    (_rowsAvailable >= 3) ? 2 : baseRowForFacing,
+                _ => baseRowForFacing,
+            };
         }
     }
 
