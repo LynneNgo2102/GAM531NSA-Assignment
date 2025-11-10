@@ -315,9 +315,7 @@ void main() {
             _grounded = true;
         }
 
-        /// <summary>
-        /// Main update called each frame. left/right/run/jump come from keyboard state.
-        /// </summary>
+        
         public void Update(float delta, bool left, bool right, bool run, bool jumpPressed)
         {
             // --- Determine horizontal direction & facing
@@ -377,12 +375,11 @@ void main() {
                 }
             }
 
-            // --- Animation timing and frame selection
+            // Animation timing and frame selection
             switch (_state)
             {
                 case CharacterState.Idle:
                     // keep last frame visible or set specific idle frame
-                    // We'll set frame 0 of facing row
                     _frame = 0;
                     UpdateSpriteUniformsForFrame(_frame, GetRowForState(_state, _facing));
                     break;
@@ -409,16 +406,14 @@ void main() {
 
                 case CharacterState.Jump:
                     // Jump typically uses a single frame (e.g., last frame of row).
-                    // We pick a reasonable single-frame index (middle or last) so it looks like a jump pose.
+                    
                     int jumpFrameIdx = Math.Min(_cols - 1, 1); // prefer frame 1 or last if not enough frames
                     UpdateSpriteUniformsForFrame(jumpFrameIdx, GetRowForState(_state, _facing));
                     break;
             }
         }
 
-        /// <summary>
-        /// Render: set model transform (translate to Position) then draw.
-        /// </summary>
+  
         public void Render()
         {
             // Build model matrix (translate to Position; Z=0)
@@ -439,10 +434,7 @@ void main() {
             UpdateSpriteUniformsForFrame(0, GetRowForState(CharacterState.Jump, _facing));
         }
 
-        /// <summary>
-        /// Map (col,row) to normalized UVs and upload to shader.
-        /// This function handles fallbacks when requested row is not present.
-        /// </summary>
+        
         private void UpdateSpriteUniformsForFrame(int col, int row)
         {
             // Clamp column
@@ -467,12 +459,6 @@ void main() {
             GL.Uniform2(_sizeLoc, w, h);
         }
 
-        /// <summary>
-        /// Determines which row index to use for a given state and facing direction.
-        /// You can customize row mapping according to your atlas layout.
-        /// By default: row 0 = facing right, row 1 = facing left.
-        /// If you have extra rows: row 2/3 could be jump rows (right/left).
-        /// </summary>
         private int GetRowForState(CharacterState state, Facing facing)
         {
             // Default layout assumptions:
