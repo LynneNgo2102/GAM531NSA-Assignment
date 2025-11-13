@@ -1,494 +1,367 @@
-﻿// File: Program.cs
-//
-// Updated to add: Jump + Run, state machine, physics-like vertical motion,
-// animation rows selection based on actual sprite PNG dimensions,
-// model transform updated per-frame, and clean separation of concerns.
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.Common;
+using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
-using OpenTK.Graphics.OpenGL4;                       // OpenGL API
-using OpenTK.Windowing.Common;                       // Frame events (OnLoad/OnUpdate/OnRender)
-using OpenTK.Windowing.Desktop;                      // GameWindow/NativeWindowSettings
-using OpenTK.Windowing.GraphicsLibraryFramework;     // Keyboard state
-using OpenTK.Mathematics;                            // Matrix4, Vector types
-using System;
-using System.IO;
-using ImageSharp = SixLabors.ImageSharp.Image;       // Alias for brevity
-using SixLabors.ImageSharp.PixelFormats;             // Rgba32 pixel type
-
-namespace OpenTK_Sprite_Animation
+namespace BreakoutModernOpenTK
 {
-    public class SpriteAnimationGame : GameWindow
+    class GameObject
     {
-        private Character _character;                 // Handles animation state + UV selection
-        private int _shaderProgram;                   // Linked GLSL program
-        private int _vao, _vbo;                       // Geometry
-        private int _texture;                         // Sprite sheet
+        public Vector2 Position;
+        public Vector2 Size;
+        public bool Destroyed = false;
+        public Vector3 Color = new Vector3(1f);
+        public GameObject(Vector2 pos, Vector2 size) { Position = pos; Size = size; }
+        public Vector2 Center => Position + Size * 0.5f;
+    }
 
-        public SpriteAnimationGame()
-            : base(
-                new GameWindowSettings(),
-                new NativeWindowSettings { Size = (800, 600), Title = "Sprite Animation" })
-        { }
+    class BallObject
+    {
+        public Vector2 Center;
+        public float Radius;
+        public Vector2 Velocity;
+        public Vector3 Color = new Vector3(1f, 0.7f, 0.2f);
+        public bool Stuck = true;
+        public BallObject(Vector2 c, float r) { Center = c; Radius = r; Velocity = new Vector2(0, -200); }
+    }
+
+    class SimpleShader : IDisposable
+    {
+        public int Handle;
+        public SimpleShader(string vsSrc, string fsSrc)
+        {
+            int vs = GL.CreateShader(ShaderType.VertexShader);
+            GL.ShaderSource(vs, vsSrc);
+            GL.CompileShader(vs);
+            CheckShader(vs);
+
+            int fs = GL.CreateShader(ShaderType.FragmentShader);
+            GL.ShaderSource(fs, fsSrc);
+            GL.CompileShader(fs);
+            CheckShader(fs);
+
+            Handle = GL.CreateProgram();
+            GL.AttachShader(Handle, vs);
+            GL.AttachShader(Handle, fs);
+            GL.LinkProgram(Handle);
+            GL.GetProgram(Handle, GetProgramParameterName.LinkStatus, out int ok);
+            if (ok == 0) throw new Exception("Program link error: " + GL.GetProgramInfoLog(Handle));
+
+            GL.DetachShader(Handle, vs);
+            GL.DetachShader(Handle, fs);
+            GL.DeleteShader(vs);
+            GL.DeleteShader(fs);
+        }
+
+        void CheckShader(int id)
+        {
+            GL.GetShader(id, ShaderParameter.CompileStatus, out int ok);
+            if (ok == 0) throw new Exception("Shader compile error: " + GL.GetShaderInfoLog(id));
+        }
+
+        public void Use() => GL.UseProgram(Handle);
+        public int GetUniformLocation(string name) => GL.GetUniformLocation(Handle, name);
+        public void Dispose() { if (Handle != 0) GL.DeleteProgram(Handle); }
+    }
+   
+    class BreakoutWindow : GameWindow
+    {
+        int ScreenW = 800, ScreenH = 600;
+        GameObject paddle;
+        BallObject ball;
+        List<GameObject> bricks = new List<GameObject>();
+        float paddleSpeed = 500f;
+
+        // shader + uniform locations
+        SimpleShader shader;
+        int uProjection, uModel, uColor;
+
+        // buffers for dynamic draws
+        int vao, vbo;
+       
+        public BreakoutWindow(GameWindowSettings gws, NativeWindowSettings nws) : base(gws, nws) { }
 
         protected override void OnLoad()
         {
             base.OnLoad();
-
-            GL.ClearColor(0f, 0f, 0f, 0f);            // Transparent background (A=0)
-            GL.Enable(EnableCap.Blend);               // Enable alpha blending
+            GL.ClearColor(0.06f, 0.06f, 0.08f, 1f);
+            GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-            _shaderProgram = CreateShaderProgram();   // Compile + link
-            _texture = LoadTexture("Sprite_Character.png"); // Upload sprite sheet
+            // simple shader
+            string vs = @"
+                #version 330 core
+                layout(location = 0) in vec2 aPos;
+                uniform mat4 uProjection;
+                uniform mat4 uModel;
+                void main() {
+                    gl_Position = uProjection * uModel * vec4(aPos, 0.0, 1.0);
+                }";
+            string fs = @"
+                #version 330 core
+                uniform vec3 uColor;
+                out vec4 FragColor;
+                void main() {
+                    FragColor = vec4(uColor, 1.0);
+                }";
+            shader = new SimpleShader(vs, fs);
+            shader.Use();
+            uProjection = shader.GetUniformLocation("uProjection");
+            uModel = shader.GetUniformLocation("uModel");
+            uColor = shader.GetUniformLocation("uColor");
 
-            // Quad vertices: [pos.x, pos.y, uv.x, uv.y], centered model space
-            float w = 64f, h = 128f;                  // half-size used for quad geometry
-            float[] vertices =
+            // Create VAO/VBO (we will upload vertex arrays per-draw)
+            vao = GL.GenVertexArray();
+            vbo = GL.GenBuffer();
+            GL.BindVertexArray(vao);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
+            GL.EnableVertexAttribArray(0);
+            GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.BindVertexArray(0);
+
+            ResetLevel();
+            UpdateProjection();
+        }
+
+        void UpdateProjection()
+        {
+            Matrix4 proj = Matrix4.CreateOrthographicOffCenter(0, ScreenW, ScreenH, 0, -1f, 1f);
+            shader.Use();
+            GL.UniformMatrix4(uProjection, false, ref proj);
+        }
+
+        void ResetLevel()
+        {
+            bricks.Clear();
+            Vector2 paddleSize = new Vector2(120, 20);
+            paddle = new GameObject(new Vector2((ScreenW - paddleSize.X) / 2f, ScreenH - 50), paddleSize);
+            paddle.Color = new Vector3(0.2f, 0.6f, 1.0f);
+
+            ball = new BallObject(new Vector2(paddle.Center.X, paddle.Position.Y - 12f), 10f);
+            ball.Stuck = true;
+            ball.Velocity = new Vector2(150f, -250f);
+
+            // bricks
+            int rows = 5, cols = 10;
+            float bw = 64, bh = 22;
+            float offX = 40, offY = 30, spacingX = 6, spacingY = 8;
+            for (int r = 0; r < rows; ++r)
             {
-                -w, -h, 0f, 0f,
-                 w, -h, 1f, 0f,
-                 w,  h, 1f, 1f,
-                -w,  h, 0f, 1f
+                for (int c = 0; c < cols; ++c)
+                {
+                    float x = offX + c * (bw + spacingX);
+                    float y = offY + r * (bh + spacingY);
+                    var b = new GameObject(new Vector2(x, y), new Vector2(bw, bh));
+                    b.Color = new Vector3(0.25f + 0.1f * r, 0.45f, 0.7f - 0.08f * r);
+                    bricks.Add(b);
+                }
+            }
+        }
+
+        protected override void OnResize(ResizeEventArgs e)
+        {
+            base.OnResize(e);
+            ScreenW = Size.X; ScreenH = Size.Y;
+            GL.Viewport(0, 0, ScreenW, ScreenH);
+            UpdateProjection();
+        }
+
+        // --- drawing primitives using shader + VAO/VBO ---
+        void DrawRect(float x, float y, float w, float h, Vector3 color)
+        {
+            // two triangles (6 vertices)
+            float[] verts = {
+                x,     y,
+                x + w, y,
+                x + w, y + h,
+                x,     y,
+                x + w, y + h,
+                x,     y + h
             };
 
-            _vao = GL.GenVertexArray();
-            GL.BindVertexArray(_vao);
+            shader.Use();
+            GL.BindVertexArray(vao);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
+            GL.BufferData(BufferTarget.ArrayBuffer, verts.Length * sizeof(float), verts, BufferUsageHint.DynamicDraw);
 
-            _vbo = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
+            // model is identity for rects since we compute coords directly in screen space
+            Matrix4 model = Matrix4.Identity;
+            GL.UniformMatrix4(uModel, false, ref model);
+            GL.Uniform3(uColor, color);
 
-            // Attribute 0: vec2 position
-            GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 4 * sizeof(float), 0);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
 
-            // Attribute 1: vec2 texcoord
-            GL.EnableVertexAttribArray(1);
-            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 4 * sizeof(float), 2 * sizeof(float));
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.BindVertexArray(0);
+        }
 
-            GL.UseProgram(_shaderProgram);
+        void DrawCircle(float cx, float cy, float radius, Vector3 color, int segments = 40)
+        {
+            // triangle fan: center + perimeter points
+            float[] verts = new float[(segments + 2) * 2];
+            verts[0] = cx; verts[1] = cy;
+            for (int i = 0; i <= segments; i++)
+            {
+                float theta = i * (float)(Math.PI * 2) / segments;
+                verts[(i + 1) * 2 + 0] = cx + radius * MathF.Cos(theta);
+                verts[(i + 1) * 2 + 1] = cy + radius * MathF.Sin(theta);
+            }
 
-            // Bind sampler to texture unit 0 (WHY: avoid undefined default binding)
-            int texLoc = GL.GetUniformLocation(_shaderProgram, "uTexture");
-            GL.Uniform1(texLoc, 0);
+            shader.Use();
+            GL.BindVertexArray(vao);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
+            GL.BufferData(BufferTarget.ArrayBuffer, verts.Length * sizeof(float), verts, BufferUsageHint.DynamicDraw);
 
-            // Orthographic projection (pixel coordinates 0..800, 0..600)
-            // IMPORTANT: positional args to avoid API-name mismatch across OpenTK versions.
-            int projLoc = GL.GetUniformLocation(_shaderProgram, "projection");
-            Matrix4 ortho = Matrix4.CreateOrthographicOffCenter(0, 800, 0, 600, -1, 1);
-            GL.UniformMatrix4(projLoc, false, ref ortho);
+            Matrix4 model = Matrix4.Identity;
+            GL.UniformMatrix4(uModel, false, ref model);
+            GL.Uniform3(uColor, color);
 
-            // Character will manage the model transform itself; start at (400,300)
-            _character = new Character(_shaderProgram, 400f, 300f, _texture, GetLoadedTextureSize("Sprite_Character.png"));
+            GL.DrawArrays(PrimitiveType.TriangleFan, 0, segments + 2);
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.BindVertexArray(0);
+        }
+
+        // clamp helper
+        static float Clamp(float v, float a, float b) => MathF.Max(a, MathF.Min(b, v));
+
+        static bool CircleAABBOverlap(BallObject ball, GameObject rect, out Vector2 closest)
+        {
+            float rectMinX = rect.Position.X;
+            float rectMaxX = rect.Position.X + rect.Size.X;
+            float rectMinY = rect.Position.Y;
+            float rectMaxY = rect.Position.Y + rect.Size.Y;
+
+            float cx = Clamp(ball.Center.X, rectMinX, rectMaxX);
+            float cy = Clamp(ball.Center.Y, rectMinY, rectMaxY);
+            closest = new Vector2(cx, cy);
+            float dx = ball.Center.X - cx;
+            float dy = ball.Center.Y - cy;
+            return (dx * dx + dy * dy) <= ball.Radius * ball.Radius;
+        }
+
+        static bool AABBOverlap(GameObject a, GameObject b)
+        {
+            bool ox = a.Position.X < b.Position.X + b.Size.X && a.Position.X + a.Size.X > b.Position.X;
+            bool oy = a.Position.Y < b.Position.Y + b.Size.Y && a.Position.Y + a.Size.Y > b.Position.Y;
+            return ox && oy;
+        }
+
+        void ResolveCircleAABB(BallObject ball, GameObject rect)
+        {
+            // Find which axis to reflect on by comparing overlap distances
+            Vector2 rectCenter = rect.Center;
+            Vector2 diff = ball.Center - rectCenter;
+            Vector2 half = rect.Size * 0.5f;
+            float dx = MathF.Abs(diff.X) - half.X;
+            float dy = MathF.Abs(diff.Y) - half.Y;
+
+            if (MathF.Abs(dx) < MathF.Abs(dy))
+                ball.Velocity.X = -ball.Velocity.X;
+            else
+                ball.Velocity.Y = -ball.Velocity.Y;
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             base.OnUpdateFrame(e);
+            float dt = (float)e.Time;
+            var k = KeyboardState;
 
-            // Read keyboard state -> forward to character
-            var kb = KeyboardState;
+            if (k.IsKeyDown(Keys.Escape)) Close();
 
-            // We'll pass booleans: left/right/run/jump (space/up)
-            bool left = kb.IsKeyDown(Keys.Left);
-            bool right = kb.IsKeyDown(Keys.Right);
-            bool run = kb.IsKeyDown(Keys.LeftShift) || kb.IsKeyDown(Keys.RightShift);
-            bool jumpPressed = kb.IsKeyDown(Keys.Space) || kb.IsKeyDown(Keys.Up);
+            float dir = 0;
+            if (k.IsKeyDown(Keys.Left) || k.IsKeyDown(Keys.A)) dir -= 1;
+            if (k.IsKeyDown(Keys.Right) || k.IsKeyDown(Keys.D)) dir += 1;
+            paddle.Position.X += dir * paddleSpeed * dt;
+            paddle.Position.X = Clamp(paddle.Position.X, 0, ScreenW - paddle.Size.X);
 
-            _character.Update((float)e.Time, left, right, run, jumpPressed);
+            if (k.IsKeyPressed(Keys.R)) ResetLevel();
+            if (k.IsKeyPressed(Keys.Space) && ball.Stuck) { ball.Stuck = false; var rnd = new Random(); ball.Velocity = new Vector2((float)(rnd.NextDouble() * 200 - 100), -200f); }
+
+            if (ball.Stuck)
+            {
+                ball.Center = new Vector2(paddle.Center.X, paddle.Position.Y - ball.Radius - 1f);
+            }
+            else
+            {
+                // integrate
+                ball.Center += ball.Velocity * dt;
+
+                // bounds
+                if (ball.Center.X - ball.Radius < 0) { ball.Center.X = ball.Radius; ball.Velocity.X = -ball.Velocity.X; }
+                if (ball.Center.X + ball.Radius > ScreenW) { ball.Center.X = ScreenW - ball.Radius; ball.Velocity.X = -ball.Velocity.X; }
+                if (ball.Center.Y - ball.Radius < 0) { ball.Center.Y = ball.Radius; ball.Velocity.Y = -ball.Velocity.Y; }
+
+                if (ball.Center.Y - ball.Radius > ScreenH) { ball.Stuck = true; ball.Velocity = new Vector2(0, -200); ball.Center = new Vector2(paddle.Center.X, paddle.Position.Y - ball.Radius - 1f); }
+
+                // paddle
+                if (CircleAABBOverlap(ball, paddle, out Vector2 cp))
+                {
+                    float offset = (ball.Center.X - paddle.Center.X) / (paddle.Size.X / 2f);
+                    float strength = 300f;
+                    ball.Velocity.X = strength * offset;
+                    ball.Velocity.Y = -MathF.Abs(ball.Velocity.Y);
+                    ball.Center.Y = paddle.Position.Y - ball.Radius - 1f;
+                }
+
+                // bricks
+                foreach (var b in bricks.Where(b => !b.Destroyed))
+                {
+                    if (CircleAABBOverlap(ball, b, out Vector2 cp2))
+                    {
+                        b.Destroyed = true;
+                        ResolveCircleAABB(ball, b);
+                        ball.Velocity *= 1.02f;
+                        break;
+                    }
+                }
+            }
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
-
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
-            // Bind texture and VAO, then draw
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, _texture);
-            GL.BindVertexArray(_vao);
+            // draw bricks
+            foreach (var b in bricks) if (!b.Destroyed) DrawRect(b.Position.X, b.Position.Y, b.Size.X, b.Size.Y, b.Color);
 
-            _character.Render();
+            // paddle
+            DrawRect(paddle.Position.X, paddle.Position.Y, paddle.Size.X, paddle.Size.Y, paddle.Color);
+
+            // ball
+            DrawCircle(ball.Center.X, ball.Center.Y, ball.Radius, ball.Color, 40);
 
             SwapBuffers();
         }
 
         protected override void OnUnload()
         {
-            // Free GPU resources
-            GL.DeleteProgram(_shaderProgram);
-            GL.DeleteTexture(_texture);
-            GL.DeleteBuffer(_vbo);
-            GL.DeleteVertexArray(_vao);
             base.OnUnload();
-        }
-
-        // --- Shader creation utilities ---------------------------------------------------------
-
-        private int CreateShaderProgram()
-        {
-            // Vertex Shader: transforms positions, flips V in UVs (image origin vs GL origin)
-            string vs = @"
-#version 330 core
-layout(location = 0) in vec2 aPosition;
-layout(location = 1) in vec2 aTexCoord;
-out vec2 vTexCoord;
-uniform mat4 projection;
-uniform mat4 model;
-void main() {
-    gl_Position = projection * model * vec4(aPosition, 0.0, 1.0);
-    vTexCoord = vec2(aTexCoord.x, 1.0 - aTexCoord.y); // flip V so PNGs read intuitively
-}";
-
-            // Fragment Shader: samples sub-rect of the sheet using uOffset/uSize
-            string fs = @"
-#version 330 core
-in vec2 vTexCoord;
-out vec4 color;
-uniform sampler2D uTexture; // bound to texture unit 0
-uniform vec2 uOffset;       // normalized UV start (0..1)
-uniform vec2 uSize;         // normalized UV size  (0..1)
-void main() {
-    vec2 uv = uOffset + vTexCoord * uSize;
-    color = texture(uTexture, uv);
-}";
-
-            int v = GL.CreateShader(ShaderType.VertexShader);
-            GL.ShaderSource(v, vs);
-            GL.CompileShader(v);
-            CheckShaderCompile(v, "VERTEX");
-
-            int f = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource(f, fs);
-            GL.CompileShader(f);
-            CheckShaderCompile(f, "FRAGMENT");
-
-            int p = GL.CreateProgram();
-            GL.AttachShader(p, v);
-            GL.AttachShader(p, f);
-            GL.LinkProgram(p);
-            CheckProgramLink(p);
-
-            GL.DetachShader(p, v);
-            GL.DetachShader(p, f);
-            GL.DeleteShader(v);
-            GL.DeleteShader(f);
-
-            return p;
-        }
-
-        private static void CheckShaderCompile(int shader, string stage)
-        {
-            GL.GetShader(shader, ShaderParameter.CompileStatus, out int ok);
-            if (ok == 0)
-                throw new Exception($"{stage} SHADER COMPILE ERROR:\n{GL.GetShaderInfoLog(shader)}");
-        }
-
-        private static void CheckProgramLink(int program)
-        {
-            GL.GetProgram(program, GetProgramParameterName.LinkStatus, out int ok);
-            if (ok == 0)
-                throw new Exception($"PROGRAM LINK ERROR:\n{GL.GetProgramInfoLog(program)}");
-        }
-
-        // --- Texture loading ------------------------------------------------------------------
-
-        private int LoadTexture(string path)
-        {
-            if (!File.Exists(path))
-                throw new FileNotFoundException($"Texture not found: {path}", path);
-
-            using var img = ImageSharp.Load<Rgba32>(path); // decode to RGBA8
-
-            int tex = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, tex);
-
-            // Copy raw pixels to managed buffer then upload
-            var pixels = new byte[4 * img.Width * img.Height];
-            img.CopyPixelDataTo(pixels);
-
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba,
-                          img.Width, img.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
-
-            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-
-            // Nearest: prevents bleeding between adjacent frames on the atlas
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-
-            // Clamp: avoid wrap artifacts at frame borders
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
-
-            return tex;
-        }
-
-        // Helper: read image dimensions (width,height) for Character to compute UVs correctly
-        private (int width, int height) GetLoadedTextureSize(string path)
-        {
-            using var img = ImageSharp.Load(path);
-            return (img.Width, img.Height);
+            GL.DeleteBuffer(vbo);
+            GL.DeleteVertexArray(vao);
+            shader.Dispose();
         }
     }
 
-    // --- Character state machine + animator -----------------------------------------------
-    public enum CharacterState { Idle, Walk, Run, Jump }
-    public enum Facing { Right, Left }
-
-    public class Character
+    static class Program
     {
-        private readonly int _shader;      // Program containing uOffset/uSize
-        private readonly int _texture;     // texture id (for reference)
-        private readonly float _sheetW;    // sheet pixel width
-        private readonly float _sheetH;    // sheet pixel height
-
-        // Position & physics
-        public Vector2 Position;
-        private float _vy;                 // vertical velocity (pixels/sec)
-        private const float Gravity = -1200f;   // pixels per second^2 (downwards)
-        private const float JumpVel = 520f;     // initial jump velocity (pixels/sec)
-
-        // Movement speeds (pixels/sec)
-        private const float WalkSpeed = 120f;
-        private const float RunSpeed = 260f;
-
-        // Animation timing
-        private float _timer;              // accumulated time for stepping
-        private int _frame;                // current frame index
-        private float _frameTimeWalk = 0.15f;
-        private float _frameTimeRun = 0.08f;
-
-        // Facing & state
-        private Facing _facing = Facing.Right;
-        private CharacterState _state = CharacterState.Idle;
-        private bool _grounded = true;     // simple grounded flag: true when on or above baseY
-
-        // Sprite layout guesses (will be adjusted to the loaded image)
-        private readonly int _cols = 4;    // frames per row (commonly 4)
-        private readonly float FrameW;     // pixel width of a frame
-        private readonly float FrameH;     // pixel height of a frame
-        private readonly float Gap;        // horizontal spacing between frames (pixels)
-        private readonly int _rowsAvailable; // computed from sheetH/FrameH
-
-        // Where to place the quad in world-space (we will translate model)
-        private readonly int _modelLoc;
-        private readonly int _offsetLoc;
-        private readonly int _sizeLoc;
-
-        // Ground Y (simple floor). This keeps the character anchored visually.
-        private readonly float _groundY = 300f; // this is the baseline center Y used in your original code
-
-        public Character(int shaderProgram, float startX, float startY, int textureId, (int width, int height) sheetPixels)
+        static void Main()
         {
-            _shader = shaderProgram;
-            _texture = textureId;
-            Position = new Vector2(startX, startY);
-            _vy = 0f;
-
-            _sheetW = sheetPixels.width;
-            _sheetH = sheetPixels.height;
-
-            // Heuristic: try to infer frame sizes from known / provided PNG layout.
-            // The PNG provided to me had approx 4 columns and 2 rows with
-            // frame widths ~77px and frame height ~127px; compute robust defaults:
-            FrameH = _sheetH / 2f; // assume two rows (top/bottom)
-            FrameW = _sheetW / 4f; // assume 4 columns
-
-            // Compute gap by evenly distributing remaining space between frames:
-            // total width = 4 * FrameW + 3 * Gap  => Gap = (sheetW - 4*FrameW) / 3
-            Gap = (_sheetW - _cols * FrameW) / Math.Max(1, (_cols - 1));
-
-            // number of rows available in sheet (floor)
-            _rowsAvailable = Math.Max(1, (int)Math.Floor(_sheetH / FrameH));
-
-            // Uniform locations
-            _modelLoc = GL.GetUniformLocation(_shader, "model");
-            _offsetLoc = GL.GetUniformLocation(_shader, "uOffset");
-            _sizeLoc = GL.GetUniformLocation(_shader, "uSize");
-
-            // start in idle frame
-            _state = CharacterState.Idle;
-            _frame = 0;
-            UpdateSpriteUniformsForFrame(_frame, 0); // default top row 0
-            // Ensure character starts resting on ground baseline
-            Position.Y = startY;
-            _grounded = true;
-        }
-
-        
-        public void Update(float delta, bool left, bool right, bool run, bool jumpPressed)
-        {
-            // --- Determine horizontal direction & facing
-            float dir = 0f;
-            if (left) dir = -1f;
-            else if (right) dir = 1f;
-
-            if (dir > 0) _facing = Facing.Right;
-            else if (dir < 0) _facing = Facing.Left;
-
-            // --- Movement & state transitions
-            // Jump input: only trigger when grounded
-            bool tryJump = jumpPressed && _grounded;
-            if (tryJump)
+            var gws = GameWindowSettings.Default;
+            var nws = new NativeWindowSettings()
             {
-                _vy = JumpVel;
-                _grounded = false;
-                _state = CharacterState.Jump;
-                // Set jump sprite row if available (row index e.g. 2)
-                ChooseJumpFrame();
-            }
-            else if (!_grounded)
-            {
-                _state = CharacterState.Jump; // maintain mid-air
-            }
-            else if (Math.Abs(dir) > 0.001f)
-            {
-                _state = run ? CharacterState.Run : CharacterState.Walk;
-            }
-            else
-            {
-                _state = CharacterState.Idle;
-            }
-
-            // --- Horizontal movement
-            float speed = _state == CharacterState.Run ? RunSpeed : WalkSpeed;
-            Position.X += dir * speed * delta;
-
-            // --- Vertical physics (simple)
-            if (!_grounded)
-            {
-                // integrate vy with gravity (downwards)
-                _vy += Gravity * delta;
-                Position.Y += _vy * delta;
-
-                // If we reached or passed baseline ground, land
-                if (Position.Y <= _groundY)
-                {
-                    Position.Y = _groundY;
-                    _vy = 0f;
-                    _grounded = true;
-                    // after landing, change to Idle/Walk depending on dir
-                    if (Math.Abs(dir) > 0.001f)
-                        _state = run ? CharacterState.Run : CharacterState.Walk;
-                    else
-                        _state = CharacterState.Idle;
-                }
-            }
-
-            // Animation timing and frame selection
-            switch (_state)
-            {
-                case CharacterState.Idle:
-                    // keep last frame visible or set specific idle frame
-                    _frame = 0;
-                    UpdateSpriteUniformsForFrame(_frame, GetRowForState(_state, _facing));
-                    break;
-
-                case CharacterState.Walk:
-                    _timer += delta;
-                    if (_timer >= _frameTimeWalk)
-                    {
-                        _timer -= _frameTimeWalk;
-                        _frame = (_frame + 1) % _cols;
-                    }
-                    UpdateSpriteUniformsForFrame(_frame, GetRowForState(_state, _facing));
-                    break;
-
-                case CharacterState.Run:
-                    _timer += delta;
-                    if (_timer >= _frameTimeRun)
-                    {
-                        _timer -= _frameTimeRun;
-                        _frame = (_frame + 1) % _cols;
-                    }
-                    UpdateSpriteUniformsForFrame(_frame, GetRowForState(_state, _facing));
-                    break;
-
-                case CharacterState.Jump:
-                    // Jump typically uses a single frame (e.g., last frame of row).
-                    
-                    int jumpFrameIdx = Math.Min(_cols - 1, 1); // prefer frame 1 or last if not enough frames
-                    UpdateSpriteUniformsForFrame(jumpFrameIdx, GetRowForState(_state, _facing));
-                    break;
-            }
-        }
-
-  
-        public void Render()
-        {
-            // Build model matrix (translate to Position; Z=0)
-            Matrix4 model = Matrix4.CreateTranslation(Position.X, Position.Y, 0f);
-
-            GL.UseProgram(_shader);
-            GL.UniformMatrix4(_modelLoc, false, ref model);
-
-            // Draw quad (VAO must be bound externally)
-            GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
-        }
-
-        private void ChooseJumpFrame()
-        {
-            // If the sheet contains a dedicated jump row, prefer to use it; otherwise, we fallback.
-            // We'll attempt to pick row index 2 (i.e., third row) for jump animations.
-            // GetRowForState will clamp to available rows.
-            UpdateSpriteUniformsForFrame(0, GetRowForState(CharacterState.Jump, _facing));
-        }
-
-        
-        private void UpdateSpriteUniformsForFrame(int col, int row)
-        {
-            // Clamp column
-            col = Math.Clamp(col, 0, _cols - 1);
-
-            // Determine available rows from sheet size; if requested row >= available, fallback to 0 or facing rows
-            int rowCountAvailable = _rowsAvailable;
-            if (row >= rowCountAvailable) row = 0;
-
-            // Compute start X in pixels: start of column = col*(FrameW + Gap)
-            float startX = col * (FrameW + Gap);
-            float startY = row * FrameH;
-
-            // Convert to normalized UV (0..1)
-            float u = startX / _sheetW;
-            float v = startY / _sheetH;
-            float w = FrameW / _sheetW;
-            float h = FrameH / _sheetH;
-
-            GL.UseProgram(_shader);
-            GL.Uniform2(_offsetLoc, u, v);
-            GL.Uniform2(_sizeLoc, w, h);
-        }
-
-        private int GetRowForState(CharacterState state, Facing facing)
-        {
-            // Default layout assumptions:
-            // row 0: right-facing walk/idle
-            // row 1: left-facing walk/idle
-            // row 2: right-facing jump (optional)
-            // row 3: left-facing jump (optional)
-            int baseRowForFacing = facing == Facing.Right ? 0 : 1;
-
-            return state switch
-            {
-                CharacterState.Idle => baseRowForFacing,
-                CharacterState.Walk => baseRowForFacing,
-                CharacterState.Run => baseRowForFacing, // assume same row as walk but faster timing
-                CharacterState.Jump =>
-                    // if jump rows exist, prefer rows 2/3; otherwise fallback to facing row
-                    (_rowsAvailable >= 4) ? (facing == Facing.Right ? 2 : 3) :
-                    (_rowsAvailable >= 3) ? 2 : baseRowForFacing,
-                _ => baseRowForFacing,
+                Size = new Vector2i(800, 600),
+                Title = "Breakout (modern OpenTK) - AABB & Circle collisions"
             };
-        }
-    }
-
-    // --- Entry point ---------------------------------------------------------------------------
-    internal class Program
-    {
-        private static void Main()
-        {
-            using var game = new SpriteAnimationGame(); // Ensures Dispose/OnUnload is called
-            game.Run();                                  // Game loop: Load -> (Update/Render)* -> Unload
+            using var win = new BreakoutWindow(gws, nws);
+            win.Run();
         }
     }
 }
