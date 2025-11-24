@@ -12,6 +12,10 @@ namespace BackRoomMap
         Shader roomShader, lightSourceShader;
         Camera camera;
         Texture wallTex, floorTex;
+        List<GameObject> sceneObjects = new List<GameObject>();
+        AABB playerCollider;
+        float playerRadius = 0.3f;
+
 
         // Meshes 3  types
         Mesh floorCeilingMesh, wallMesh, decorativeMesh;
@@ -48,6 +52,20 @@ namespace BackRoomMap
             // Load textures (Ensure 'Assets/wall.png' and 'Assets/floor.png' exist)
             wallTex = new Texture("Assets/wall.png");
             floorTex = new Texture("Assets/floor.png");
+            // PLAYER COLLIDER AABB
+            playerCollider = new AABB(camera.Position, new Vector3(playerRadius));
+
+            // PILLAR OBJECT (collidable)
+            GameObject pillarObj = new GameObject();
+            pillarObj.Mesh = decorativeMesh;
+            pillarObj.Texture = wallTex;
+            pillarObj.Transform.Position = new Vector3(3f, 2.5f, -3f);
+            pillarObj.Transform.Scale = new Vector3(0.5f, 5f, 0.5f);
+
+            // Half extents = scale / 2 AABB
+            pillarObj.Collider = new AABB(pillarObj.Transform.Position, pillarObj.Transform.Scale / 2f);
+
+            sceneObjects.Add(pillarObj);
 
             CursorState = CursorState.Grabbed;
         }
@@ -64,45 +82,119 @@ namespace BackRoomMap
             floorTex.Dispose();
         }
 
+        //protected override void OnUpdateFrame(FrameEventArgs e)
+        //{
+        //    base.OnUpdateFrame(e);
+        //    var ks = KeyboardState;
+        //    if (ks.IsKeyDown(Keys.Escape)) Close();
+
+
+        //    camera.ProcessKeyboard(ks, (float)e.Time);
+
+        //    Vector3 pos = camera.Position;
+        //    float halfRoom = ROOM_SIZE / 2f;
+        //    float padding = 0.5f;
+
+        //    // Collision: Keep player inside the room bounds (-4.5 to 4.5)
+        //    if (pos.X < -halfRoom + padding) pos.X = -halfRoom + padding;
+        //    if (pos.X > halfRoom - padding) pos.X = halfRoom - padding;
+        //    if (pos.Z < -halfRoom + padding) pos.Z = -halfRoom + padding;
+        //    if (pos.Z > halfRoom - padding) pos.Z = halfRoom - padding;
+
+        //    float eyeHeight = 1.6f;
+        //    float ceilingLimit = ROOM_SIZE - padding;
+
+        //    if (pos.Y < eyeHeight) pos.Y = eyeHeight;
+        //    if (pos.Y > ceilingLimit) pos.Y = ceilingLimit;
+
+        //    camera.Position = pos;
+
+        //    // Tab and E interaction logic is the same as the previous response
+        //    if (ks.IsKeyPressed(Keys.Tab))
+        //    {
+        //        CursorState = CursorState == CursorState.Grabbed ? CursorState.Normal : CursorState.Grabbed;
+        //        if (CursorState == CursorState.Normal) firstMove = true;
+        //    }
+        //    if (ks.IsKeyPressed(Keys.E))
+        //    {
+        //        lightOn = !lightOn;
+        //        Console.WriteLine($"Light is now: {(lightOn ? "ON" : "OFF")}");
+        //    }
+        //}
+
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             base.OnUpdateFrame(e);
             var ks = KeyboardState;
-            if (ks.IsKeyDown(Keys.Escape)) Close();
 
-            
+            if (ks.IsKeyDown(Keys.Escape))
+                Close();
+
+      
+            // 1. Get intended movement
+          
+            Vector3 previousPos = camera.Position;
+
             camera.ProcessKeyboard(ks, (float)e.Time);
 
-            Vector3 pos = camera.Position;
+            // Predict movement
+            Vector3 desiredPos = camera.Position;
+
+            // Update predicted player collider
+            AABB predictedPlayer = new AABB(desiredPos, new Vector3(playerRadius));
+
+            // 2. Check collision with scene objects
+          
+            foreach (var obj in sceneObjects)
+            {
+                if (obj.Collider.Intersects(predictedPlayer))
+                {
+                    // Collision → cancel movement
+                    desiredPos = previousPos;
+                    break;
+                }
+            }
+
+    
+            // 3. Apply ROOM boundary constraints
+            
             float halfRoom = ROOM_SIZE / 2f;
             float padding = 0.5f;
 
-            // Collision: Keep player inside the room bounds (-4.5 to 4.5)
-            if (pos.X < -halfRoom + padding) pos.X = -halfRoom + padding;
-            if (pos.X > halfRoom - padding) pos.X = halfRoom - padding;
-            if (pos.Z < -halfRoom + padding) pos.Z = -halfRoom + padding;
-            if (pos.Z > halfRoom - padding) pos.Z = halfRoom - padding;
+            if (desiredPos.X < -halfRoom + padding) desiredPos.X = -halfRoom + padding;
+            if (desiredPos.X > halfRoom - padding) desiredPos.X = halfRoom - padding;
+            if (desiredPos.Z < -halfRoom + padding) desiredPos.Z = -halfRoom + padding;
+            if (desiredPos.Z > halfRoom - padding) desiredPos.Z = halfRoom - padding;
 
+            // Vertical constraints
             float eyeHeight = 1.6f;
             float ceilingLimit = ROOM_SIZE - padding;
 
-            if (pos.Y < eyeHeight) pos.Y = eyeHeight;
-            if (pos.Y > ceilingLimit) pos.Y = ceilingLimit;
+            if (desiredPos.Y < eyeHeight) desiredPos.Y = eyeHeight;
+            if (desiredPos.Y > ceilingLimit) desiredPos.Y = ceilingLimit;
 
-            camera.Position = pos;
+            // Apply new valid position
+            camera.Position = desiredPos;
 
-            // Tab and E interaction logic is the same as the previous response
+            // Update actual collider center
+            playerCollider.Center = camera.Position;
+
+          
+            // 4. Interaction Keys
+           
             if (ks.IsKeyPressed(Keys.Tab))
             {
                 CursorState = CursorState == CursorState.Grabbed ? CursorState.Normal : CursorState.Grabbed;
                 if (CursorState == CursorState.Normal) firstMove = true;
             }
+
             if (ks.IsKeyPressed(Keys.E))
             {
                 lightOn = !lightOn;
                 Console.WriteLine($"Light is now: {(lightOn ? "ON" : "OFF")}");
             }
         }
+
 
         protected override void OnMouseMove(MouseMoveEventArgs e)
         {
@@ -204,12 +296,17 @@ namespace BackRoomMap
             roomShader.SetMatrix4("model", rightWallModel);
             wallMesh.Render();
 
+
+
             // object 2: Decorative Pillar (using decorativeMesh) 
             wallTex.Use(TextureUnit.Texture0); // Reuse wall texture
-            var pillarModel = Matrix4.CreateScale(0.5f, 5f, 0.5f) *
-                              Matrix4.CreateTranslation(3f, 2.5f, -3f);
-            roomShader.SetMatrix4("model", pillarModel);
-            decorativeMesh.Render();
+            foreach (var obj in sceneObjects)
+            {
+                roomShader.SetMatrix4("model", obj.GetModelMatrix());
+                obj.Texture?.Use(TextureUnit.Texture0);
+                obj.Mesh.Render();
+            }
+
 
             // object3: Interactable (Light Indicator) 
             //Rendering the light indicator is the same as the previous response
