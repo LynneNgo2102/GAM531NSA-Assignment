@@ -11,7 +11,7 @@ namespace BackRoomMap
             var native = new NativeWindowSettings()
             {
                 Size = new OpenTK.Mathematics.Vector2i(1280, 720),
-                Title = "BackRoom - Midterm",
+                Title = "Assignment 9",
             };
 
 
