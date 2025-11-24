@@ -3,56 +3,32 @@
   "WorkspaceRootPath": "C:\\GAM531\\assignment1\\assignment9\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\src\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:src\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\game\\gl\\shader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:game\\gl\\shader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\src\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:src\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\game\\assets\\wall.png||{177559E0-D141-11D0-92DF-00A0C9138C45}",
+      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:game\\assets\\wall.png||{177559E0-D141-11D0-92DF-00A0C9138C45}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\src\\engine\\bounds.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:src\\engine\\bounds.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\game\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:game\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\game\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:game\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\GAM531\\assignment1\\assignment9\\obj\\Debug\\net8.0\\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:obj\\Debug\\net8.0\\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\GAM531\\assignment1\\assignment9\\obj\\Debug\\net8.0\\assignment9.AssemblyInfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:obj\\Debug\\net8.0\\assignment9.AssemblyInfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}",
       "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\src\\render\\shader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:src\\render\\shader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\src\\engine\\transform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:src\\engine\\transform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\src\\engine\\playercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:src\\engine\\playercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\src\\engine\\camera.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:src\\engine\\camera.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\assets\\shaders\\basic.frag.glsl||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:assets\\shaders\\basic.frag.glsl||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\assets\\shaders\\basic.vert.glsl||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:assets\\shaders\\basic.vert.glsl||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\src\\engine\\collisionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:src\\engine\\collisionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\src\\engine\\collider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:src\\engine\\collider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\src\\engine\\gameeobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|solutionrelative:src\\engine\\gameeobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8C663C8E-6DA8-4379-BE9A-7F3DAD684E04}|assignment9.csproj|c:\\gam531\\assignment1\\assignment9\\readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
@@ -71,25 +47,89 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Game.cs",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\src\\Game.cs",
-              "RelativeDocumentMoniker": "src\\Game.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\src\\Game.cs",
-              "RelativeToolTip": "src\\Game.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAAJAAAAAAAAAA==",
+              "Title": "Shader.cs",
+              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\Game\\GL\\Shader.cs",
+              "RelativeDocumentMoniker": "Game\\GL\\Shader.cs",
+              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\Game\\GL\\Shader.cs",
+              "RelativeToolTip": "Game\\GL\\Shader.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-19T21:30:06.29Z",
+              "WhenOpened": "2025-11-24T05:19:45.944Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "wall.png -  [English (United Kingdom)] - PNG [2048x2048, 24 bit, PNG]",
+              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\Game\\Assets\\wall.png",
+              "RelativeDocumentMoniker": "Game\\Assets\\wall.png",
+              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\Game\\Assets\\wall.png -  [English (United Kingdom)] - PNG [2048x2048, 24 bit, PNG]",
+              "RelativeToolTip": "Game\\Assets\\wall.png -  [English (United Kingdom)] - PNG [2048x2048, 24 bit, PNG]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001533|",
+              "WhenOpened": "2025-11-24T05:19:43.232Z",
+              "EditorCaption": " -  [English (United Kingdom)] - PNG [2048x2048, 24 bit, PNG]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": ".NETCoreApp,Version=v8.0.AssemblyAttributes.cs",
+              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\obj\\Debug\\net8.0\\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs",
+              "RelativeDocumentMoniker": "obj\\Debug\\net8.0\\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs",
+              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\obj\\Debug\\net8.0\\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs",
+              "RelativeToolTip": "obj\\Debug\\net8.0\\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-24T05:09:44.084Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "assignment9.AssemblyInfo.cs",
+              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\obj\\Debug\\net8.0\\assignment9.AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "obj\\Debug\\net8.0\\assignment9.AssemblyInfo.cs",
+              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\obj\\Debug\\net8.0\\assignment9.AssemblyInfo.cs",
+              "RelativeToolTip": "obj\\Debug\\net8.0\\assignment9.AssemblyInfo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-24T05:09:33.877Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Game.cs",
+              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\Game\\Game.cs",
+              "RelativeDocumentMoniker": "Game\\Game.cs",
+              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\Game\\Game.cs",
+              "RelativeToolTip": "Game\\Game.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-24T05:04:03.298Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\Game\\Program.cs",
+              "RelativeDocumentMoniker": "Game\\Program.cs",
+              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\Game\\Program.cs",
+              "RelativeToolTip": "Game\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-24T05:03:59.831Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": ".gitignore",
               "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\.gitignore",
               "RelativeDocumentMoniker": ".gitignore",
               "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\.gitignore",
               "RelativeToolTip": ".gitignore",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAAACcAAAArAAAAAAAAAA==",
+              "ViewState": "AgIAACIAAAAAAAAAAAAAAJEBAAA/AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
               "WhenOpened": "2025-11-23T22:52:06.662Z",
               "EditorCaption": ""
@@ -97,136 +137,6 @@
             {
               "$type": "Document",
               "DocumentIndex": 7,
-              "Title": "Camera.cs",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\Camera.cs",
-              "RelativeDocumentMoniker": "src\\Engine\\Camera.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\Camera.cs",
-              "RelativeToolTip": "src\\Engine\\Camera.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-23T21:16:36.647Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Shader.cs",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\src\\Render\\Shader.cs",
-              "RelativeDocumentMoniker": "src\\Render\\Shader.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\src\\Render\\Shader.cs",
-              "RelativeToolTip": "src\\Render\\Shader.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-23T21:13:30.214Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "CollisionManager.cs",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\CollisionManager.cs",
-              "RelativeDocumentMoniker": "src\\Engine\\CollisionManager.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\CollisionManager.cs",
-              "RelativeToolTip": "src\\Engine\\CollisionManager.cs",
-              "ViewState": "AgIAABoAAAAAAAAAAAAgwC8AAAAfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-23T21:12:34.926Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "PlayerController.cs",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\PlayerController.cs",
-              "RelativeDocumentMoniker": "src\\Engine\\PlayerController.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\PlayerController.cs",
-              "RelativeToolTip": "src\\Engine\\PlayerController.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAswBoAAAAUAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-23T21:12:23.883Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Bounds.cs",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\Bounds.cs",
-              "RelativeDocumentMoniker": "src\\Engine\\Bounds.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\Bounds.cs",
-              "RelativeToolTip": "src\\Engine\\Bounds.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-23T21:12:10.519Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "Collider.cs",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\Collider.cs",
-              "RelativeDocumentMoniker": "src\\Engine\\Collider.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\Collider.cs",
-              "RelativeToolTip": "src\\Engine\\Collider.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-23T21:12:01.926Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "Transform.cs",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\Transform.cs",
-              "RelativeDocumentMoniker": "src\\Engine\\Transform.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\Transform.cs",
-              "RelativeToolTip": "src\\Engine\\Transform.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-23T21:11:46.819Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "GameeObject.cs",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\GameeObject.cs",
-              "RelativeDocumentMoniker": "src\\Engine\\GameeObject.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\src\\Engine\\GameeObject.cs",
-              "RelativeToolTip": "src\\Engine\\GameeObject.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-23T21:11:25.374Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "basic.frag.glsl",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\assets\\shaders\\basic.frag.glsl",
-              "RelativeDocumentMoniker": "assets\\shaders\\basic.frag.glsl",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\assets\\shaders\\basic.frag.glsl",
-              "RelativeToolTip": "assets\\shaders\\basic.frag.glsl",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-11-23T21:10:27.13Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "basic.vert.glsl",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\assets\\shaders\\basic.vert.glsl",
-              "RelativeDocumentMoniker": "assets\\shaders\\basic.vert.glsl",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\assets\\shaders\\basic.vert.glsl",
-              "RelativeToolTip": "assets\\shaders\\basic.vert.glsl",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-11-23T21:10:16.678Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 13,
               "Title": "README.md",
               "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\README.md",
               "RelativeDocumentMoniker": "README.md",
@@ -235,19 +145,6 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
               "WhenOpened": "2025-11-19T21:28:07.483Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\GAM531\\assignment1\\assignment9\\src\\Program.cs",
-              "RelativeDocumentMoniker": "src\\Program.cs",
-              "ToolTip": "C:\\GAM531\\assignment1\\assignment9\\src\\Program.cs",
-              "RelativeToolTip": "src\\Program.cs",
-              "ViewState": "AgIAAAcAAAAAAAAAAAAwwDQAAAAQAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-19T21:26:07.187Z",
               "EditorCaption": ""
             }
           ]
